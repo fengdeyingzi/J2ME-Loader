@@ -1,0 +1,98 @@
+
+Android 获取系统各个目录
+发表于2017/3/31 22:16:15  1422人阅读
+分类： Android开发 文件系统 目录路径
+
+在Android开发过程中，我们经常会对文件系统进行操作——存放、释放我们应用的数据。Android系统中提供了各种功能的文件目录，每个目录都有相应的特点和功能。 这篇文章主要介绍和记录一下实际开发过程中常用的各个文件目录。
+
+（1）内部存储(Internal Storage)
+
+内部存储是App的私有目录，当一个应用卸载之后，内部存储中的这些文件也被删除。Shared Preferences和SQLite数据库文件都是存储在内部存储空间上的。
+
+-context.getFileDir()
+
+路径：(data/data/应用包名/files), 
+不过经实际测试(华为、小米手机等)，getFileDir实际路径为: /data/user/0/ 应用包名/files
+
+ Log.e(TAG,getApplicationContext().getFilesDir().getAbsolutePath())
+1
+-context.getCacheDir()
+
+应用程序的缓存目录，该目录内的文件在设备内存不足时会优先被删除掉，所以存放在这里的文件是没有任何保障的，可能会随时丢掉。 
+路径：(data/data/应用包名/cache),不过经实际测试(华为、小米手机等)，getCacheDir的手机路径为: /data//data/user/0/应用包名/cache
+
+Log.e(TAG,getApplicationContext().getCacheDir().getAbsolutePath())
+1
+(2 )外部存储(External Storage) 
+外部存储一般是指SDCard，外部存储中的文件是可以被用户或者其他应用程序修改的，外部存储中的目录实际上也分为两种:
+
+-公共文件(目录)
+
+文件是可以被自由访问，且文件的数据对其他应用或者用户来说都是由 意义的，当应用被卸载之后，其卸载前创建的文件仍然保留。
+
+Environment.getExternalStorageDirectory() 
+SD卡的根目录，路径：/storage/emulated/0
+
+Log.e(TAG, Environment.getExternalStorageDirectory().getAbsolutePath());
+
+1
+2
+3
+-私有文件
+
+由于是外部存储的原因即使是这种类型的文件也能被其他程序访问，只不过一个应用私有的文件对其他应用其实是没有访问价值的（恶意程序除外）。外部存储上，应用私有文件的价值在于卸载之后，这些文件也会被删除。类似于内部存储。
+
+getApplicationContext().getExternalFilesDir(“”) 
+路径：/storage/emulated/0/Android/data/应用包名/files
+
+Log.e(TAG, getApplicationContext().getExternalFilesDir("").getAbsolutePath());
+1
+扩展： getExternalFilesDir是手机中设置 → 应用 → 具体应用详情→ 清除数据 的操作对象
+
+getApplicationContext().getExternalCacheDir() 
+路径：/storage/emulated/0/Android/data/应用包名/cache
+
+       Log.e(TAG,getApplicationContext().getExternalCacheDir().getAbsolutePath());
+1
+2
+扩展: getExternalCacheDir是手机中设置 → 应用 → 具体应用详情→ 清除缓存的操作对象
+
+阅读全文
+0 0
+
+相关文章推荐
+android中的文件操作详解以及内部存储和外部存储
+  androidwifi 2014-01-01 02:28 101833
+android 获取路径目录方法以及判断目录是否存在，创建目录
+  chengyingzhilian 2012-08-06 09:36 94842
+
+解析Android中应用程序文件存储用得到的一些文件路径
+  afei__ 2016-06-07 21:23 4265
+Android SDK目录下的各个文件夹的作用
+  sydMobile 2016-04-24 19:00 5559
+android各种文件夹路径
+  u011228356 2015-03-11 16:00 3926
+
+android获取存储目录(路径)的几种方式和注意事项
+  yan_startwith2015 2017-09-11 11:42 1268
+android操作系统详细目录结构
+  LVXIANGAN 2016-06-13 22:22 4993
+Android commond 进入系统目录
+  huaiyiheyuan 2016-07-26 09:56 322
+查看更多
+暂无评论，我去发表~
+ 未登录
+•首页
+•移动开发
+•架构
+•云计算/大数据
+•互联网
+•运维
+•数据库
+•前端
+•编程语言
+•研发管理
+•综合
+©1999-2012, csdn.net, All Rights Reserved
+
+

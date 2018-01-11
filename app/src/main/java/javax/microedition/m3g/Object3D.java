@@ -1,233 +1,169 @@
-/*
-* Copyright (c) 2003 Nokia Corporation and/or its subsidiary(-ies).
-* All rights reserved.
-* This component and the accompanying materials are made available
-* under the terms of "Eclipse Public License v1.0"
-* which accompanies this distribution, and is available
-* at the URL "http://www.eclipse.org/legal/epl-v10.html".
-*
-* Initial Contributors:
-* Nokia Corporation - initial contribution.
-*
-* Contributors:
-*
-* Description:
-*
-*/
-
-
 package javax.microedition.m3g;
 
-import java.util.Enumeration;
 import java.util.Vector;
 
-/**
-*/
-public abstract class Object3D
-{
-    //------------------------------------------------------------------
-    // Instance data
-    //------------------------------------------------------------------
+public abstract class Object3D {
 
-    int handle;
+	protected int userID = 0;
+	protected Object userObject = null;
+	Vector animationTracks = new Vector();
 
-    private Object userObject;
-    private Vector animTracks;
-    private Interface iInterface;
+	void updateProperty(int property, float[] value) {
+	}
 
-    protected void finalize()
-    {
-        doFinalize();
-    }
+	int applyAnimation(int time) {
+		int validity = 0x7FFFFFFF;
 
-    //------------------------------------------------------------------
-    // Constructor(s)
-    //------------------------------------------------------------------
+		if (animationTracks.isEmpty())
+			return validity;
 
-    /**
-     * <p>Only a package private constructor exists for this class.</p>
-     */
-    Object3D(int handle)
-    {
-        if (handle != 0)
-        {
-            this.handle = handle;
-            _addRef(handle);
+		int numTracks = animationTracks.size();
 
-            // Get associated Interafece object and
-            // register this instance with that
-            iInterface = Interface.getInstance();
-            iInterface.register(this);
+		for (int trackIndex = 0; trackIndex < numTracks; ) {
+			AnimationTrack track = (AnimationTrack) animationTracks.elementAt(trackIndex);
+			KeyframeSequence sequence = track.sequence;
 
-            int n = _getAnimationTrackCount(handle);
-            while (n-- > 0)
-            {
-                linkAnimTrack((AnimationTrack) getInstance(_getAnimationTrack(handle, n)));
-            }
-        }
-        else
-        {
-            System.out.println("Warning: Object3D constructor called with zero handle");
-        }
-    }
+			int components = sequence.componentCount;
+			int property = track.property;
+			int nextProperty;
 
-    //------------------------------------------------------------------
-    // Public API
-    //------------------------------------------------------------------
+			float sumWeights = 0;
+			float[] sumValues = new float[components];
 
-    public final Object3D duplicate()
-    {
-        int numRef = 1;
-        if (this instanceof Node)
-        {
-            numRef = ((Node)this)._getSubtreeSize(handle);
-        }
-        int[] handles = new int[numRef * 2];
-        Object3D obj = getInstance(_duplicate(handle, handles));
-        for (int i = 0; i < numRef; i++)
-        {
-            Object userObj = getInstance(handles[i * 2]).getUserObject();
-            Object3D duplicateObj = getInstance(handles[i * 2 + 1]);
-            if (userObj != null)
-            {
-                duplicateObj.setUserObject(userObj);
-            }
-        }
-        return obj;
-    }
+			for (int i = 0; i < components; i++) sumValues[i] = 0;
 
-    public int getReferences(Object3D[] references)
-    {
-        int[] handles = null;
-        if (references != null)
-        {
-            handles = new int[references.length];
-        }
-        int num = _getReferences(handle, handles);
-        if (references != null)
-        {
-            for (int i = 0; i < num; i++)
-            {
-                references[i] = getInstance(handles[i]);
-            }
-        }
-        return num;
-    }
+			do {
+				float[] weight = new float[1];
+				int[] Validity = new int[1];
 
-    public void setUserID(int userID)
-    {
-        _setUserID(handle, userID);
-    }
+				track.getContribution(time, sumValues, weight, Validity);
+				if (Validity[0] <= 0)
+					return 0;
 
-    public int getUserID()
-    {
-        return _getUserID(handle);
-    }
+				sumWeights += weight[0];
+				validity = Math.min(validity, Validity[0]);
 
-    public Object3D find(int userID)
-    {
-        return getInstance(_find(handle, userID));
-    }
+				if (++trackIndex == numTracks)
+					break;
+				track = (AnimationTrack) animationTracks.elementAt(trackIndex);
+				nextProperty = track.property;
+			} while (nextProperty == property);
 
-    public void addAnimationTrack(AnimationTrack animationTrack)
-    {
-        _addAnimationTrack(handle, animationTrack.handle);
-        linkAnimTrack(animationTrack);
-    }
+			if (sumWeights > 0)
+				updateProperty(property, sumValues);
+		}
+		return validity;
+	}
 
-    public AnimationTrack getAnimationTrack(int index)
-    {
-        /* Don't try to match the native indexing here -- just call
-         * the native getter */
-        return (AnimationTrack)getInstance(_getAnimationTrack(handle, index));
-    }
+	int doGetReferences(Object3D[] references) {
+		if (!animationTracks.isEmpty()) {
+			if (references != null) {
+				for (int i = 0; i < animationTracks.size(); ++i) {
+					references[i] = (Object3D) animationTracks.elementAt(i);
+				}
+			}
+			return animationTracks.size();
+		}
+		return 0;
+	}
 
-    public void removeAnimationTrack(AnimationTrack animationTrack)
-    {
-        if (animationTrack != null)
-        {
-            _removeAnimationTrack(handle, animationTrack.handle);
+	public final Object3D duplicate() {
+		Object3D copy = duplicateImpl();
+		copy.userID = userID;
+		copy.userObject = userObject;
+		for (int i = 0; i < animationTracks.size(); i++)
+			copy.animationTracks.add(animationTracks.elementAt(i));
+		return copy;
+	}
 
-            if (animTracks != null)
-            {
-                animTracks.removeElement(animationTrack);
-                if (animTracks.isEmpty())
-                {
-                    animTracks = null;
-                }
-            }
-        }
-    }
+	abstract Object3D duplicateImpl();
 
-    public int getAnimationTrackCount()
-    {
-        return _getAnimationTrackCount(handle);
-    }
+	Object3D findID(int userID) {
+		if (this.userID == userID)
+			return this;
 
-    public final int animate(int time)
-    {
-        return _animate(handle, time);
-    }
+		if (animationTracks != null)
+			for (int i = 0; i < animationTracks.size(); i++) {
+				AnimationTrack track = (AnimationTrack) animationTracks.elementAt(i);
+				Object3D found = track.findID(userID);
+				if (found != null)
+					return found;
+			}
 
-    public void setUserObject(Object obj)
-    {
-        userObject = obj;
-    }
+		return null;
+	}
 
-    public Object getUserObject()
-    {
-        return userObject;
-    }
+	public Object3D find(int userID) {
+		if (this.userID == userID)
+			return this;
 
-    //------------------------------------------------------------------
-    // Private methods
-    //------------------------------------------------------------------
+		return findID(userID);
+	}
 
-    static final Object3D getInstance(int handle)
-    {
-        return Interface.getObjectInstance(handle);
-    }
+	public int getReferences(Object3D[] references) {
+		return doGetReferences(references);
+	}
 
-    /**
-     * Adds a reference to an animation track.
-     */
-    private void linkAnimTrack(AnimationTrack track)
-    {
-        if (animTracks == null)
-        {
-            animTracks = new Vector();
-        }
-        animTracks.addElement(track);
-    }
+	public int getUserID() {
+		return userID;
+	}
 
-    /**
-     * Native peer finalization
-     */
-    private void doFinalize()
-    {
-            if (handle != 0)
-            {
-                // finalize native peer
-                Platform.finalizeObject(handle, iInterface);
-                iInterface.deregister(this, iInterface);
+	public void setUserID(int userID) {
+		this.userID = userID;
+	}
 
-                // reset handles
-                iInterface = null;
-                handle= 0;
-            }
-    }
+	public Object getUserObject() {
+		return this.userObject;
+	}
 
-    // Native methods
-    private static native int _addAnimationTrack(int hObject, int hAnimationTrack);
-    private static native void _removeAnimationTrack(int hObject, int hAnimationTrack);
-    private static native int _getAnimationTrackCount(int hObject);
-    private static native int _animate(int hObject, int time);
-    private static native void _setUserID(int hObject, int userID);
-    private static native int _getUserID(int hObject);
+	public void setUserObject(Object userObject) {
+		this.userObject = userObject;
+	}
 
-    private static native void _addRef(int hObject);
-    private static native int _getAnimationTrack(int hObject, int index);
-    private static native int _duplicate(int hObject, int[] handles);
-    private static native int _getReferences(int hObject, int[] handles);
-    private static native int _find(int hObject, int userID);
+	public void addAnimationTrack(AnimationTrack animationTrack) {
+
+		if (animationTrack == null) {
+			throw new NullPointerException();
+		}
+		if ((!isCompatible(animationTrack)) || animationTracks.contains(animationTrack)) {
+			throw new IllegalArgumentException("AnimationTrack is already existing or incompatible");
+		}
+
+		int newTrackTarget = animationTrack.getTargetProperty();
+		int components = animationTrack.getKeyframeSequence().getComponentCount();
+		int i;
+		for (i = 0; i < animationTracks.size(); i++) {
+			AnimationTrack track = (AnimationTrack) animationTracks.elementAt(i);
+
+			if (track.getTargetProperty() > newTrackTarget)
+				break;
+
+			if (track.getTargetProperty() == newTrackTarget && (track.getKeyframeSequence().getComponentCount() != components)) {
+				throw new IllegalArgumentException();
+			}
+		}
+
+		animationTracks.add(i, animationTrack);
+	}
+
+	public AnimationTrack getAnimationTrack(int index) {
+		return (AnimationTrack) animationTracks.elementAt(index);
+	}
+
+	public void removeAnimationTrack(AnimationTrack animationTrack) {
+		animationTracks.removeElement(animationTrack);
+	}
+
+	public int getAnimationTrackCount() {
+		return animationTracks.size();
+	}
+
+	public final int animate(int time) {
+		return applyAnimation(time);
+	}
+
+	boolean isCompatible(AnimationTrack animationtrack) {
+		return false;
+	}
+
 }

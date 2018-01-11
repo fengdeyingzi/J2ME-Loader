@@ -20,11 +20,9 @@ package javax.microedition.lcdui;
 import android.content.Context;
 import android.os.PowerManager;
 import android.os.Vibrator;
-import android.support.v7.app.AppCompatActivity;
 
 import javax.microedition.lcdui.event.RunnableEvent;
 import javax.microedition.midlet.MIDlet;
-import javax.microedition.midlet.MIDletStateChangeException;
 import javax.microedition.shell.MicroActivity;
 import javax.microedition.util.ContextHolder;
 
@@ -54,14 +52,14 @@ public class Display {
 
 	private MIDlet context;
 	private Displayable current;
-	private AppCompatActivity activity;
+	private MicroActivity activity;
 
 	private static PowerManager powermanager;
 	private static PowerManager.WakeLock wakelock;
 	private static Vibrator vibrator;
 
 	public static Display getDisplay(MIDlet midlet) {
-		if (instance == null && midlet != null) {
+		if (instance == null) {
 			instance = new Display(midlet);
 		}
 		return instance;
@@ -69,7 +67,6 @@ public class Display {
 
 	private Display(MIDlet midlet) {
 		context = midlet;
-		activity = ContextHolder.getCurrentActivity();
 	}
 
 	public static void initDisplay() {
@@ -78,14 +75,11 @@ public class Display {
 
 	public void setCurrent(Displayable disp) {
 		if (disp == null) {
+			ContextHolder.notifyPaused();
 			return;
 		}
-		if (disp instanceof Alert) {
-			setCurrent((Alert) disp, current);
-		} else {
-			changeCurrent(disp);
-			showCurrent();
-		}
+		changeCurrent(disp);
+		showCurrent();
 	}
 
 	public void setCurrent(final Alert alert, Displayable disp) {
@@ -111,25 +105,31 @@ public class Display {
 		current = disp;
 	}
 
-	private void showCurrent() {
-		((MicroActivity) activity).setCurrent(current);
-	}
-
-	public void activityResumed() {
-		try {
+	public void changeActivity(MicroActivity subject) {
+		if (subject == activity) {
 			context.startApp();
-		} catch (MIDletStateChangeException e) {
-			e.printStackTrace();
 		}
+		activity = subject;
 		showCurrent();
 	}
 
-	public void activityStopped() {
-		context.pauseApp();
+	private void showCurrent() {
+		boolean isCanvas = current instanceof Canvas;
+		if (activity != null) {
+			if (activity.isCanvas() == isCanvas) {
+				activity.setCurrent(current);
+			} else {
+				activity.startActivity(MicroActivity.class, isCanvas);
+			}
+		} else {
+			context.startActivity(MicroActivity.class, isCanvas);
+		}
 	}
 
-	public void activityDestroyed() {
-		context.callDestroyApp(true);
+	public void activityStopped(MicroActivity subject) {
+		if (subject == this.activity) {
+			context.callPauseApp();
+		}
 	}
 
 	public Displayable getCurrent() {
@@ -155,6 +155,8 @@ public class Display {
 			}
 			if (duration > 0) {
 				wakelock.acquire(duration);
+			} else if (duration < 0) {
+				wakelock.acquire();
 			}
 			return true;
 		} catch (Throwable t) {

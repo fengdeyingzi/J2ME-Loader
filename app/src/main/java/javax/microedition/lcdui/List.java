@@ -1,6 +1,5 @@
 /*
  * Copyright 2012 Kulikov Dmitriy
- * Copyright 2017-2018 Nikita Shakarun
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -47,25 +46,29 @@ public class List extends Screen implements Choice, ItemSelector {
 	private class ClickListener implements AdapterView.OnItemClickListener {
 		public void onItemClick(AdapterView parent, View view, int position, long id) {
 			selectedIndex = position;
+
 			switch (listType) {
 				case IMPLICIT:
 					fireCommandAction(selectCommand, List.this);
 					break;
+
 				case EXCLUSIVE:
 					if (selectedIndex >= 0 && selectedIndex < selected.size()) {
 						selected.set(selectedIndex, Boolean.FALSE);
 					}
+
 					if (position >= 0 && position < selected.size()) {
 						selected.set(position, Boolean.TRUE);
 					}
+
 					break;
+
 				case MULTIPLE:
 					if (position >= 0 && position < selected.size()) {
 						selected.set(position, !selected.get(position));
 					}
 					break;
 			}
-			adapter.notifyDataSetChanged();
 		}
 	}
 

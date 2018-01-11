@@ -1,7 +1,7 @@
 /*
  * Copyright 2012 Kulikov Dmitriy
  * Copyright 2015-2016 Nickolay Savchenko
- * Copyright 2017-2018 Nikita Shakarun
+ * Copyright 2017 Nikita Shakarun
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,6 @@
 package javax.microedition.lcdui;
 
 import android.content.Context;
-import android.support.v7.app.AppCompatActivity;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.LinearLayout;
@@ -69,7 +68,7 @@ public class Form extends Screen {
 		item.setOwnerForm(this);
 
 		if (layout != null) {
-			AppCompatActivity a = getParentActivity();
+			MicroActivity a = getParentActivity();
 			if (a != null) {
 				a.runOnUiThread(new Runnable() {
 					public void run() {
@@ -86,7 +85,7 @@ public class Form extends Screen {
 		item.setOwnerForm(this);
 
 		if (layout != null) {
-			AppCompatActivity a = getParentActivity();
+			MicroActivity a = getParentActivity();
 			if (a != null) {
 				a.runOnUiThread(new Runnable() {
 					public void run() {
@@ -102,7 +101,7 @@ public class Form extends Screen {
 		item.setOwnerForm(this);
 
 		if (layout != null) {
-			AppCompatActivity a = getParentActivity();
+			MicroActivity a = getParentActivity();
 			if (a != null) {
 				a.runOnUiThread(new Runnable() {
 					public void run() {
@@ -118,7 +117,7 @@ public class Form extends Screen {
 		items.remove(index).setOwnerForm(null);
 
 		if (layout != null) {
-			AppCompatActivity a = getParentActivity();
+			MicroActivity a = getParentActivity();
 			if (a != null) {
 				a.runOnUiThread(new Runnable() {
 					public void run() {
@@ -137,7 +136,7 @@ public class Form extends Screen {
 		items.clear();
 
 		if (layout != null) {
-			AppCompatActivity a = getParentActivity();
+			MicroActivity a = getParentActivity();
 			if (a != null) {
 				a.runOnUiThread(new Runnable() {
 					public void run() {

@@ -1,17 +1,19 @@
 /*
- * Copyright 2017-2018 Nikita Shakarun
+ * J2ME Loader
+ * Copyright (C) 2017 Nikita Shakarun
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 package ua.naiksoftware.util;
@@ -32,26 +34,33 @@ public class ZipUtils {
 	private static final int BUFFER_SIZE = 2048;
 	private static String sourceFolder;
 
-	public static void zipFileAtPath(File sourceFile, File toLocation) throws IOException {
-		BufferedInputStream origin;
-		FileOutputStream dest = new FileOutputStream(toLocation);
-		ZipOutputStream out = new ZipOutputStream(new BufferedOutputStream(
-				dest));
-		sourceFolder = "/" + sourceFile.getName() + "/";
-		if (sourceFile.isDirectory()) {
-			zipSubFolder(out, sourceFile, sourceFile.getParent().length());
-		} else {
-			byte data[] = new byte[BUFFER_SIZE];
-			FileInputStream fi = new FileInputStream(sourceFile);
-			origin = new BufferedInputStream(fi, BUFFER_SIZE);
-			ZipEntry entry = new ZipEntry(sourceFile.getName());
-			out.putNextEntry(entry);
-			int count;
-			while ((count = origin.read(data, 0, BUFFER_SIZE)) != -1) {
-				out.write(data, 0, count);
+	public static boolean zipFileAtPath(File sourceFile, File toLocation) {
+
+		try {
+			BufferedInputStream origin;
+			FileOutputStream dest = new FileOutputStream(toLocation);
+			ZipOutputStream out = new ZipOutputStream(new BufferedOutputStream(
+					dest));
+			sourceFolder = "/" + sourceFile.getName() + "/";
+			if (sourceFile.isDirectory()) {
+				zipSubFolder(out, sourceFile, sourceFile.getParent().length());
+			} else {
+				byte data[] = new byte[BUFFER_SIZE];
+				FileInputStream fi = new FileInputStream(sourceFile);
+				origin = new BufferedInputStream(fi, BUFFER_SIZE);
+				ZipEntry entry = new ZipEntry(sourceFile.getName());
+				out.putNextEntry(entry);
+				int count;
+				while ((count = origin.read(data, 0, BUFFER_SIZE)) != -1) {
+					out.write(data, 0, count);
+				}
 			}
+			out.close();
+		} catch (Exception e) {
+			e.printStackTrace();
+			return false;
 		}
-		out.close();
+		return true;
 	}
 
 	private static void zipSubFolder(ZipOutputStream out, File folder,
@@ -80,30 +89,36 @@ public class ZipUtils {
 		}
 	}
 
-	public static void unzip(File zipFile, File extractFolder) throws IOException {
-		ZipFile zip = new ZipFile(zipFile);
-		extractFolder.mkdir();
-		Enumeration zipFileEntries = zip.entries();
-		while (zipFileEntries.hasMoreElements()) {
-			ZipEntry entry = (ZipEntry) zipFileEntries.nextElement();
-			String currentEntry = entry.getName();
-			File destFile = new File(extractFolder, currentEntry);
-			File destinationParent = destFile.getParentFile();
-			destinationParent.mkdirs();
-			if (!entry.isDirectory()) {
-				BufferedInputStream is = new BufferedInputStream(zip.getInputStream(entry));
-				int currentByte;
-				byte data[] = new byte[BUFFER_SIZE];
-				// write the current file to disk
-				FileOutputStream fos = new FileOutputStream(destFile);
-				BufferedOutputStream dest = new BufferedOutputStream(fos, BUFFER_SIZE);
-				while ((currentByte = is.read(data, 0, BUFFER_SIZE)) != -1) {
-					dest.write(data, 0, currentByte);
+	public static boolean unzip(File zipFile, File extractFolder) {
+		try {
+			ZipFile zip = new ZipFile(zipFile);
+			extractFolder.mkdir();
+			Enumeration zipFileEntries = zip.entries();
+			while (zipFileEntries.hasMoreElements()) {
+				ZipEntry entry = (ZipEntry) zipFileEntries.nextElement();
+				String currentEntry = entry.getName();
+				File destFile = new File(extractFolder, currentEntry);
+				File destinationParent = destFile.getParentFile();
+				destinationParent.mkdirs();
+				if (!entry.isDirectory()) {
+					BufferedInputStream is = new BufferedInputStream(zip.getInputStream(entry));
+					int currentByte;
+					byte data[] = new byte[BUFFER_SIZE];
+					// write the current file to disk
+					FileOutputStream fos = new FileOutputStream(destFile);
+					BufferedOutputStream dest = new BufferedOutputStream(fos, BUFFER_SIZE);
+					while ((currentByte = is.read(data, 0, BUFFER_SIZE)) != -1) {
+						dest.write(data, 0, currentByte);
+					}
+					dest.flush();
+					dest.close();
+					is.close();
 				}
-				dest.flush();
-				dest.close();
-				is.close();
 			}
+		} catch (Exception e) {
+			e.printStackTrace();
+			return false;
 		}
+		return true;
 	}
 }

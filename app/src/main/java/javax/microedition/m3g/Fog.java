@@ -1,93 +1,120 @@
-/*
-* Copyright (c) 2003 Nokia Corporation and/or its subsidiary(-ies).
-* All rights reserved.
-* This component and the accompanying materials are made available
-* under the terms of "Eclipse Public License v1.0"
-* which accompanies this distribution, and is available
-* at the URL "http://www.eclipse.org/legal/epl-v10.html".
-*
-* Initial Contributors:
-* Nokia Corporation - initial contribution.
-*
-* Contributors:
-*
-* Description:
-*
-*/
-
-
 package javax.microedition.m3g;
 
-public class Fog extends Object3D
-{
-    public static final int EXPONENTIAL = 80;
-    public static final int LINEAR = 81;
+import javax.microedition.khronos.opengles.GL10;
 
-    public Fog()
-    {
-        super(_ctor(Interface.getHandle()));
-    }
+public class Fog extends Object3D {
 
-    /**
-     */
-    Fog(int handle)
-    {
-        super(handle);
-    }
+	public static final int EXPONENTIAL = 80;
+	public static final int LINEAR = 81;
 
-    public void setMode(int mode)
-    {
-        _setMode(handle, mode);
-    }
+	private int color = 0;
+	private int mode = LINEAR;
+	private float density = 1.0f;
+	private float nearDistance = 0.0f;
+	private float farDistance = 1.0f;
 
-    public int getMode()
-    {
-        return _getMode(handle);
-    }
+	Object3D duplicateImpl() {
+		Fog copy = new Fog();
+		copy.color = color;
+		copy.mode = mode;
+		copy.density = density;
+		copy.nearDistance = nearDistance;
+		copy.farDistance = farDistance;
+		return copy;
+	}
 
-    public void setLinear(float near, float far)
-    {
-        _setLinear(handle, near, far);
-    }
+	@Override
+	void updateProperty(int property, float[] value) {
+		switch (property) {
+			case AnimationTrack.COLOR:
+				color = ColConv.color3f(value[0], value[1], value[2]) & 0x00FFFFFF;
+				break;
+			case AnimationTrack.DENSITY:
+				density = (value[0] < 0.f) ? 0.f : value[0];
+				break;
+			case AnimationTrack.FAR_DISTANCE:
+				farDistance = value[0];
+				break;
+			case AnimationTrack.NEAR_DISTANCE:
+				nearDistance = value[0];
+				break;
+			default:
+				super.updateProperty(property, value);
+		}
+	}
 
-    public float getNearDistance()
-    {
-        return _getDistance(handle, Defs.GET_NEAR);
-    }
+	public void setColor(int color) {
+		this.color = color;
+	}
 
-    public float getFarDistance()
-    {
-        return _getDistance(handle, Defs.GET_FAR);
-    }
+	public int getColor() {
+		return color;
+	}
 
-    public void setDensity(float density)
-    {
-        _setDensity(handle, density);
-    }
+	public void setMode(int mode) {
+		this.mode = mode;
+	}
 
-    public float getDensity()
-    {
-        return _getDensity(handle);
-    }
+	public int getMode() {
+		return mode;
+	}
 
-    public void setColor(int RGB)
-    {
-        _setColor(handle, RGB);
-    }
+	public void setLinear(float near, float far) {
+		this.nearDistance = near;
+		this.farDistance = far;
+	}
 
-    public int getColor()
-    {
-        return _getColor(handle);
-    }
+	public void setDensity(float density) {
+		this.density = density;
+	}
 
-    // Native methods
-    private static native int _ctor(int hInterface);
-    private static native void _setMode(int handle, int mode);
-    private static native int _getMode(int handle);
-    private static native void _setLinear(int handle, float near, float far);
-    private static native float _getDistance(int handle, int which);
-    private static native void _setDensity(int handle, float density);
-    private static native float _getDensity(int handle);
-    private static native void _setColor(int handle, int RGB);
-    private static native int _getColor(int handle);
+	public float getDensity() {
+		return density;
+	}
+
+	public void setNearDistance(float nearDistance) {
+		this.nearDistance = nearDistance;
+	}
+
+	public float getNearDistance() {
+		return nearDistance;
+	}
+
+	public void setFarDistance(float farDistance) {
+		this.farDistance = farDistance;
+	}
+
+	public float getFarDistance() {
+		return farDistance;
+	}
+
+	void setupGL(GL10 gl) {
+		switch (this.mode) {
+			case LINEAR:
+				gl.glEnable(GL10.GL_FOG);
+				gl.glFogf(GL10.GL_FOG_MODE, GL10.GL_LINEAR);
+				gl.glFogf(GL10.GL_FOG_START, this.nearDistance);
+				gl.glFogf(GL10.GL_FOG_END, this.farDistance);
+				gl.glFogfv(GL10.GL_FOG_COLOR, Color.intToFloatArray(this.color), 0);
+				break;
+			case EXPONENTIAL:
+				gl.glEnable(GL10.GL_FOG);
+				gl.glFogf(GL10.GL_FOG_MODE, GL10.GL_EXP);
+				gl.glFogf(GL10.GL_FOG_DENSITY, this.density);
+				gl.glFogfv(GL10.GL_FOG_COLOR, Color.intToFloatArray(this.color), 0);
+				break;
+		}
+	}
+
+	boolean isCompatible(AnimationTrack track) {
+		switch (track.getTargetProperty()) {
+			case AnimationTrack.COLOR:
+			case AnimationTrack.DENSITY:
+			case AnimationTrack.FAR_DISTANCE:
+			case AnimationTrack.NEAR_DISTANCE:
+				return true;
+			default:
+				return super.isCompatible(track);
+		}
+	}
 }

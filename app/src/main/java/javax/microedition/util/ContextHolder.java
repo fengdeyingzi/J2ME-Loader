@@ -1,6 +1,6 @@
 /*
  * Copyright 2012 Kulikov Dmitriy
- * Copyright 2017-2018 Nikita Shakarun
+ * Copyright 2017 Nikita Shakarun
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,6 @@ package javax.microedition.util;
 
 import android.content.Context;
 import android.os.Environment;
-import android.support.v7.app.AppCompatActivity;
 import android.view.Display;
 import android.view.WindowManager;
 
@@ -28,7 +27,10 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.InputStream;
+import java.lang.ref.WeakReference;
+import java.util.ArrayList;
 
+import javax.microedition.shell.MicroActivity;
 import javax.microedition.lcdui.pointer.VirtualKeyboard;
 import javax.microedition.rms.impl.AndroidRecordStoreManager;
 import javax.microedition.shell.MyClassLoader;
@@ -38,13 +40,22 @@ import ua.naiksoftware.util.Log;
 public class ContextHolder {
 	private static final String tag = "ContextHolder";
 
+	private static Context context;
 	private static Display display;
 	private static VirtualKeyboard vk;
-	private static AppCompatActivity currentActivity;
+	private static MicroActivity currentActivity;
+	private static ArrayList<WeakReference<MicroActivity>> activityPool = new ArrayList();
 	private static AndroidRecordStoreManager recordStoreManager = new AndroidRecordStoreManager();
 
+	public static void setContext(Context cx) {
+		context = cx;
+	}
+
 	public static Context getContext() {
-		return currentActivity.getApplicationContext();
+		if (context == null) {
+			throw new IllegalStateException("call setContext() before calling getContext()");
+		}
+		return context;
 	}
 
 	public static VirtualKeyboard getVk() {
@@ -55,7 +66,7 @@ public class ContextHolder {
 		ContextHolder.vk = vk;
 	}
 
-	private static Display getDisplay() {
+	public static Display getDisplay() {
 		if (display == null) {
 			display = ((WindowManager) getContext().getSystemService(Context.WINDOW_SERVICE)).getDefaultDisplay();
 		}
@@ -70,24 +81,53 @@ public class ContextHolder {
 		return getDisplay().getHeight();
 	}
 
+	public static WeakReference<MicroActivity> compactActivityPool(MicroActivity activity) {
+		WeakReference<MicroActivity> reference = null;
+		MicroActivity referent;
+
+		for (int index = 0; index < activityPool.size(); ) {
+			referent = activityPool.get(index).get();
+
+			if (referent == null) {
+				activityPool.remove(index);
+			} else if (referent == activity) {
+				reference = activityPool.remove(index);
+			} else {
+				index++;
+			}
+		}
+
+		return reference;
+	}
+
 	public static AndroidRecordStoreManager getRecordStoreManager() {
 		return recordStoreManager;
 	}
 
-	public static void setCurrentActivity(AppCompatActivity activity) {
+	public static void addActivityToPool(MicroActivity activity) {
+		WeakReference<MicroActivity> reference = compactActivityPool(activity);
+
+		if (reference == null) {
+			reference = new WeakReference(activity);
+		}
+
+		activityPool.add(reference);
+	}
+
+	public static void setCurrentActivity(MicroActivity activity) {
 		currentActivity = activity;
 	}
 
-	public static AppCompatActivity getCurrentActivity() {
+	public static MicroActivity getCurrentActivity() {
 		return currentActivity;
 	}
 
 	public static InputStream getResourceAsStream(Class className, String resName) {
-		Log.d(tag, "CUSTOM GET RES CALLED WITH PATH: " + resName);
+		Log.e(tag, "CUSTOM GET RES CALLED WITH PATH: " + resName);
 		try {
 			return new MIDletResourceInputStream(new File(MyClassLoader.getResFolder(), resName));
 		} catch (FileNotFoundException e) {
-			Log.d(tag, "Can't load res " + resName + " on path: " + MyClassLoader.getResFolder().getPath() + resName);
+			Log.e(tag, "Can't load res " + resName + " on path: " + MyClassLoader.getResFolder().getPath() + resName);
 			return null;
 		}
 	}
@@ -105,11 +145,12 @@ public class ContextHolder {
 	}
 
 	public static File getFileByName(String name) {
-		File dir = new File(getContext().getFilesDir(), MyClassLoader.getName());
+		File dir = new File(context.getFilesDir(), MyClassLoader.getName());
 		if (!dir.exists()) {
 			dir.mkdir();
 		}
-		return new File(dir, name);
+		File file = new File(dir, name);
+		return file;
 	}
 
 	public static File getCacheDir() {
@@ -121,11 +162,38 @@ public class ContextHolder {
 	}
 
 	/**
+	 * Свернуться в фоновый режим.
+	 */
+	public static void notifyPaused() {
+		if (currentActivity != null) {
+			currentActivity.moveTaskToBack(true);
+		}
+	}
+
+	/**
 	 * Закрыть все Activity и завершить процесс, в котором они выполнялись.
 	 */
 	public static void notifyDestroyed() {
+		MicroActivity activity;
+		int index;
+
+		while (true) {
+			index = activityPool.size() - 1;
+
+			if (index < 0) {
+				break;
+			}
+
+			activity = activityPool.remove(index).get();
+
+			if (activity != null && activity != currentActivity) {
+				activity.finish();
+			}
+		}
+
 		if (currentActivity != null) {
 			currentActivity.finish();
 		}
+
 	}
 }

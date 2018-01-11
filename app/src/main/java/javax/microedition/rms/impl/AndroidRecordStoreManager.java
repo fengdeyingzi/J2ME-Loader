@@ -54,6 +54,8 @@ public class AndroidRecordStoreManager implements RecordStoreManager {
 
 	private final static Object NULL_STORE = new Object();
 
+	private Context activity;
+
 	private String TAG = "RecordStore";
 
 	private ConcurrentHashMap<String, Object> recordStores = null;
@@ -68,10 +70,10 @@ public class AndroidRecordStoreManager implements RecordStoreManager {
 	}
 
 	private synchronized void initializeIfNecessary() {
-		Context context = ContextHolder.getContext();
+		this.activity = ContextHolder.getContext();
 		if (recordStores == null) {
 			recordStores = new ConcurrentHashMap<String, Object>();
-			String[] list = new File(context.getFilesDir(), MyClassLoader.getName()).list();
+			String[] list = new File(activity.getFilesDir(), MyClassLoader.getName()).list();
 			if (list != null && list.length > 0) {
 				for (int i = 0; i < list.length; i++) {
 					if (list[i].endsWith(RECORD_STORE_HEADER_SUFFIX)) {

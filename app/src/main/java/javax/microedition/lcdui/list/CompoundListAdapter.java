@@ -1,6 +1,5 @@
 /*
  * Copyright 2012 Kulikov Dmitriy
- * Copyright 2018 Nikita Shakarun
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,7 +20,7 @@ import android.R.layout;
 import android.content.Context;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.CheckedTextView;
+import android.widget.CompoundButton;
 import android.widget.ListAdapter;
 
 import javax.microedition.lcdui.Choice;
@@ -62,8 +61,8 @@ public class CompoundListAdapter extends CompoundAdapter implements ListAdapter 
 	public View getView(int position, View convertView, ViewGroup parent) {
 		convertView = getView(position, convertView, parent, viewResourceID, true);
 
-		if (listType != Choice.IMPLICIT && convertView instanceof CheckedTextView) {
-			((CheckedTextView) convertView).setChecked(selector.isSelected(position));
+		if (listType != Choice.IMPLICIT && convertView instanceof CompoundButton) {
+			((CompoundButton) convertView).setChecked(selector.isSelected(position));
 		}
 
 		return convertView;

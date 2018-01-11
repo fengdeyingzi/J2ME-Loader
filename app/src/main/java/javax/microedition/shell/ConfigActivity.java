@@ -1,7 +1,7 @@
 /*
  * Copyright 2012 Kulikov Dmitriy
  * Copyright 2015-2016 Nickolay Savchenko
- * Copyright 2017-2018 Nikita Shakarun
+ * Copyright 2017 Nikita Shakarun
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,13 +19,12 @@
 package javax.microedition.shell;
 
 import android.annotation.SuppressLint;
+import android.support.v7.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
-import android.content.Intent;
 import android.content.res.Configuration;
 import android.os.Bundle;
 import android.os.Environment;
-import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -45,20 +44,26 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.Locale;
 
 import javax.microedition.lcdui.Canvas;
+import javax.microedition.lcdui.Display;
 import javax.microedition.lcdui.Font;
 import javax.microedition.lcdui.event.EventQueue;
 import javax.microedition.lcdui.pointer.VirtualKeyboard;
+import javax.microedition.midlet.MIDlet;
 import javax.microedition.util.ContextHolder;
 import javax.microedition.util.param.DataContainer;
 import javax.microedition.util.param.SharedPreferencesContainer;
 
 import ua.naiksoftware.j2meloader.R;
+import ua.naiksoftware.util.FileUtils;
+import ua.naiksoftware.util.Log;
 import yuku.ambilwarna.AmbilWarnaDialog;
+import ua.naiksoftware.j2meloader.BaseActivity;
 
-public class ConfigActivity extends AppCompatActivity implements View.OnClickListener {
+public class ConfigActivity extends BaseActivity implements View.OnClickListener {
 
 	protected EditText tfScreenWidth;
 	protected EditText tfScreenHeight;
@@ -96,15 +101,14 @@ public class ConfigActivity extends AppCompatActivity implements View.OnClickLis
 
 	protected String locale;
 
+	private MIDlet midlet;
 	private File keylayoutFile;
 	private SharedPreferencesContainer params;
-	private String pathToMidletDir;
+	public static String pathToMidletDir;
+	public static String appName;
 	public static final String MIDLET_RES_DIR = "/res/";
 	public static final String MIDLET_DEX_FILE = "/converted.dex";
 	public static final String MIDLET_CONF_FILE = MIDLET_DEX_FILE + ".conf";
-	public static final String MIDLET_PATH_KEY = "path";
-	public static final String MIDLET_NAME_KEY = "name";
-	public static final String SHOW_SETTINGS_KEY = "showSettings";
 
 	/*
 	 * <xml locale=en>../../../../res/values/strings.xml</xml> <xml
@@ -125,15 +129,14 @@ public class ConfigActivity extends AppCompatActivity implements View.OnClickLis
 		return res;
 	}
 
-	@SuppressLint({"StringFormatMatches", "StringFormatInvalid"})
-	@Override
+	@SuppressLint("StringFormatMatches")
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.config_all);
 		getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-		ContextHolder.setCurrentActivity(this);
+		MIDlet.setMidletContext(this);
 		pathToMidletDir = getIntent().getDataString();
-		String appName = getIntent().getStringExtra(MIDLET_NAME_KEY);
+		appName = getIntent().getStringExtra("name");
 		appName = appName.replace(":", "").replace("/", "");
 		keylayoutFile = new File(getFilesDir() + "/" + appName, "VirtualKeyboardLayout");
 
@@ -156,30 +159,30 @@ public class ConfigActivity extends AppCompatActivity implements View.OnClickLis
 		System.setProperty("microedition.encoding", "ISO-8859-1");
 		System.setProperty("user.home", Environment.getExternalStorageDirectory().getAbsolutePath());
 
-		tfScreenWidth = findViewById(R.id.tfScreenWidth);
-		tfScreenHeight = findViewById(R.id.tfScreenHeight);
-		tfScreenBack = findViewById(R.id.tfScreenBack);
-		cxScaleToFit = findViewById(R.id.cxScaleToFit);
-		sbScaleRatio = findViewById(R.id.sbScaleRatio);
-		tfScaleRatioValue = findViewById(R.id.tfScaleRatioValue);
-		cxKeepAspectRatio = findViewById(R.id.cxKeepAspectRatio);
-		cxFilter = findViewById(R.id.cxFilter);
-		cxImmediate = findViewById(R.id.cxImmediate);
-		cxClearBuffer = findViewById(R.id.cxClearBuffer);
+		tfScreenWidth = (EditText) findViewById(R.id.tfScreenWidth);
+		tfScreenHeight = (EditText) findViewById(R.id.tfScreenHeight);
+		tfScreenBack = (EditText) findViewById(R.id.tfScreenBack);
+		cxScaleToFit = (CheckBox) findViewById(R.id.cxScaleToFit);
+		sbScaleRatio = (SeekBar) findViewById(R.id.sbScaleRatio);
+		tfScaleRatioValue = (EditText) findViewById(R.id.tfScaleRatioValue);
+		cxKeepAspectRatio = (CheckBox) findViewById(R.id.cxKeepAspectRatio);
+		cxFilter = (CheckBox) findViewById(R.id.cxFilter);
+		cxImmediate = (CheckBox) findViewById(R.id.cxImmediate);
+		cxClearBuffer = (CheckBox) findViewById(R.id.cxClearBuffer);
 
-		tfFontSizeSmall = findViewById(R.id.tfFontSizeSmall);
-		tfFontSizeMedium = findViewById(R.id.tfFontSizeMedium);
-		tfFontSizeLarge = findViewById(R.id.tfFontSizeLarge);
-		cxFontSizeInSP = findViewById(R.id.cxFontSizeInSP);
-		cxShowKeyboard = findViewById(R.id.cxIsShowKeyboard);
+		tfFontSizeSmall = (EditText) findViewById(R.id.tfFontSizeSmall);
+		tfFontSizeMedium = (EditText) findViewById(R.id.tfFontSizeMedium);
+		tfFontSizeLarge = (EditText) findViewById(R.id.tfFontSizeLarge);
+		cxFontSizeInSP = (CheckBox) findViewById(R.id.cxFontSizeInSP);
+		cxShowKeyboard = (CheckBox) findViewById(R.id.cxIsShowKeyboard);
 
-		sbVKAlpha = findViewById(R.id.sbVKAlpha);
-		tfVKHideDelay = findViewById(R.id.tfVKHideDelay);
-		tfVKFore = findViewById(R.id.tfVKFore);
-		tfVKBack = findViewById(R.id.tfVKBack);
-		tfVKSelFore = findViewById(R.id.tfVKSelFore);
-		tfVKSelBack = findViewById(R.id.tfVKSelBack);
-		tfVKOutline = findViewById(R.id.tfVKOutline);
+		sbVKAlpha = (SeekBar) findViewById(R.id.sbVKAlpha);
+		tfVKHideDelay = (EditText) findViewById(R.id.tfVKHideDelay);
+		tfVKFore = (EditText) findViewById(R.id.tfVKFore);
+		tfVKBack = (EditText) findViewById(R.id.tfVKBack);
+		tfVKSelFore = (EditText) findViewById(R.id.tfVKSelFore);
+		tfVKSelBack = (EditText) findViewById(R.id.tfVKSelBack);
+		tfVKOutline = (EditText) findViewById(R.id.tfVKOutline);
 
 		screenWidths = new ArrayList();
 		screenHeights = new ArrayList();
@@ -225,8 +228,7 @@ public class ConfigActivity extends AppCompatActivity implements View.OnClickLis
 
 		tfScaleRatioValue.addTextChangedListener(new TextWatcher() {
 			@Override
-			public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-			}
+			public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
 
 			@Override
 			public void onTextChanged(CharSequence s, int start, int before, int count) {
@@ -235,8 +237,7 @@ public class ConfigActivity extends AppCompatActivity implements View.OnClickLis
 			}
 
 			@Override
-			public void afterTextChanged(Editable s) {
-			}
+			public void afterTextChanged(Editable s) {}
 		});
 
 		loadParams(params);
@@ -262,27 +263,27 @@ public class ConfigActivity extends AppCompatActivity implements View.OnClickLis
 		((Button) findViewById(R.id.cmdLanguage)).setText(getString(
 				R.string.PREF_LANGUAGE, language));
 
-		applyConfiguration();
+		applyConfiguration(/* new MIDlet() */);// Настройка конфигурации перед
+		// запуском конструктора
+		// мидлета
 		File appSettings = new File(getFilesDir().getParent() + File.separator + "shared_prefs", appName + ".xml");
-		if (appSettings.exists() && !getIntent().getBooleanExtra(SHOW_SETTINGS_KEY, false)) {
+		if (appSettings.exists() && !getIntent().getBooleanExtra("showSettings", false)) {
 			startMIDlet();
 		}
 	}
 
-	@Override
 	public void onPause() {
 		saveParams();
 		super.onPause();
 	}
 
-	@Override
 	public void onConfigurationChanged(Configuration newConfig) {
 		super.onConfigurationChanged(newConfig);
 		fillScreenSizePresets(ContextHolder.getDisplayWidth(),
 				ContextHolder.getDisplayHeight());
 	}
 
-	private void fillScreenSizePresets(int w, int h) {
+	public void fillScreenSizePresets(int w, int h) {
 		screenWidths.clear();
 		screenHeights.clear();
 		screenAdapter.clear();
@@ -306,21 +307,21 @@ public class ConfigActivity extends AppCompatActivity implements View.OnClickLis
 		addScreenSizePreset(w, h);
 	}
 
-	private void addScreenSizePreset(int width, int height) {
+	public void addScreenSizePreset(int width, int height) {
 		screenWidths.add(width);
 		screenHeights.add(height);
 		screenAdapter.add(Integer.toString(width) + " x "
 				+ Integer.toString(height));
 	}
 
-	private void addFontSizePreset(String title, int small, int medium, int large) {
+	public void addFontSizePreset(String title, int small, int medium, int large) {
 		fontSmall.add(small);
 		fontMedium.add(medium);
 		fontLarge.add(large);
 		fontAdapter.add(title);
 	}
 
-	private void loadParams(DataContainer params) {
+	public void loadParams(DataContainer params) {
 		tfScreenWidth.setText(Integer.toString(params
 				.getInt("ScreenWidth", 240)));
 		tfScreenHeight.setText(Integer.toString(params.getInt("ScreenHeight",
@@ -368,7 +369,7 @@ public class ConfigActivity extends AppCompatActivity implements View.OnClickLis
 				.toUpperCase());
 	}
 
-	private void saveParams() {
+	public void saveParams() {
 		try {
 			params.edit();
 			params.putString("Locale", locale);
@@ -410,14 +411,14 @@ public class ConfigActivity extends AppCompatActivity implements View.OnClickLis
 			params.putInt("VirtualKeyboardColorOutline",
 					Integer.parseInt(tfVKOutline.getText().toString(), 16));
 
-			params.apply();
+			params.commit();
 			params.close();
 		} catch (Throwable t) {
 			t.printStackTrace();
 		}
 	}
 
-	private void applyConfiguration() {
+	public void applyConfiguration(/* MIDlet midlet */) {
 		try {
 			int fontSizeSmall = Integer.parseInt(tfFontSizeSmall.getText()
 					.toString());
@@ -451,6 +452,7 @@ public class ConfigActivity extends AppCompatActivity implements View.OnClickLis
 			EventQueue.setImmediate(immediateMode);
 			Canvas.setBackgroundColor(screenBackgroundColor);
 			Canvas.setClearBuffer(clearBuffer);
+
 		} catch (Throwable t) {
 			t.printStackTrace();
 		}
@@ -532,6 +534,9 @@ public class ConfigActivity extends AppCompatActivity implements View.OnClickLis
 				keylayoutFile.delete();
 				break;
 			case android.R.id.home:
+				if (midlet != null) {
+					midlet.notifyDestroyed();
+				}
 				finish();
 				break;
 		}
@@ -539,20 +544,27 @@ public class ConfigActivity extends AppCompatActivity implements View.OnClickLis
 	}
 
 	private void startMIDlet() {
-		// Теперь применяем конфигурацию к запускаемому мидлету.
-		if (cxShowKeyboard.isChecked()) {
-			setVirtualKeyboard();
-		} else {
-			ContextHolder.setVk(null);
+		try {
+			// Теперь применяем конфигурацию к запускаемому мидлету.
+			if (cxShowKeyboard.isChecked()) {
+				setVirtualKeyboard();
+			}
+
+			Display.initDisplay();
+			midlet = loadMIDlet();
+			applyConfiguration();
+			midlet.start();
+			finish();
+		} catch (Throwable t) {
+			t.printStackTrace();
+			AlertDialog.Builder builder = new AlertDialog.Builder(this)
+					.setIcon(android.R.drawable.ic_dialog_alert)
+					.setTitle(R.string.error)
+					.setMessage(t.getLocalizedMessage()+"\n"+ t.toString());
+			builder.show();
 		}
-		applyConfiguration();
-		Intent i = new Intent(this, MicroActivity.class);
-		i.putExtra(MIDLET_PATH_KEY, pathToMidletDir);
-		startActivity(i);
-		finish();
 	}
 
-	@Override
 	public void onClick(View v) {
 		String[] presets = null;
 		DialogInterface.OnClickListener presetListener = null;
@@ -686,5 +698,34 @@ public class ConfigActivity extends AppCompatActivity implements View.OnClickLis
 					color | 0xFF000000, colorListener);
 			dialog.show();
 		}
+	}
+
+	private MIDlet loadMIDlet() throws ClassNotFoundException, InstantiationException, IllegalAccessException {
+		MIDlet midlet = null;
+		LinkedHashMap<String, String> params = FileUtils.loadManifest(new File(
+				pathToMidletDir + MIDLET_CONF_FILE));
+		MIDlet.initProps(params);
+		String dex = pathToMidletDir + ConfigActivity.MIDLET_DEX_FILE;
+		ClassLoader loader = new MyClassLoader(dex,
+				getApplicationInfo().dataDir, null, getClassLoader(), pathToMidletDir + MIDLET_RES_DIR);
+		
+			String mainClassParam = params.get("MIDlet-1");
+			String mainClass = mainClassParam.substring(
+					mainClassParam.lastIndexOf(',') + 1).trim();
+			Log.e("inf", "load main: " + mainClass + " from dex:" + dex);
+			midlet = (MIDlet) loader.loadClass(mainClass).newInstance();// Тут
+			// вызывается
+			// конструктор
+			// по
+			// умолчанию.
+			/*
+		} catch (ClassNotFoundException ex) {
+			Log.e("err", ex.toString() + "/n" + ex.getMessage());
+		} catch (InstantiationException ex) {
+			Log.e("err", ex.toString() + "/n" + ex.getMessage());
+		} catch (IllegalAccessException ex) {
+			Log.e("err", ex.toString() + "/n" + ex.getMessage());
+		}*/
+		return midlet;
 	}
 }

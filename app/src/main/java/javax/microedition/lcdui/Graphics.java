@@ -17,6 +17,7 @@
 
 package javax.microedition.lcdui;
 
+import android.annotation.TargetApi;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.DashPathEffect;
@@ -28,7 +29,10 @@ import android.graphics.RectF;
 import android.graphics.Region;
 
 import java.lang.reflect.Field;
-
+/*
+绘图接口
+风的影子
+*/
 public class Graphics {
 	public static final int HCENTER = 1;
 	public static final int VCENTER = 2;

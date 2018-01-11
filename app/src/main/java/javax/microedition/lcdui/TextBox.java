@@ -24,8 +24,6 @@ import android.view.View;
 import android.widget.EditText;
 import android.widget.ScrollView;
 
-import javax.microedition.lcdui.event.SimpleEvent;
-
 public class TextBox extends Screen {
 	private ScrollView scrollview;
 
@@ -33,12 +31,6 @@ public class TextBox extends Screen {
 	private EditText textview;
 	private int maxSize;
 	private int constraints;
-
-	private SimpleEvent msgSetText = new SimpleEvent() {
-		public void process() {
-			textview.setText(text);
-		}
-	};
 
 	public TextBox(String title, String text, int maxSize, int constraints) {
 		setTitle(title);
@@ -55,14 +47,20 @@ public class TextBox extends Screen {
 		this.text = text;
 
 		if (textview != null) {
-			ViewHandler.postEvent(msgSetText);
+			textview.setText(text);
 		}
 	}
 
 	public void insert(String src, int pos) {
+		if (text != null && text.length() > maxSize) {
+			throw new IllegalArgumentException("text length exceeds max size");
+		}
+
 		this.text = new StringBuilder(getString()).insert(pos, src).toString();
 
-		setString(text);
+		if (textview != null) {
+			textview.setText(text);
+		}
 	}
 
 	public String getString() {
@@ -150,10 +148,6 @@ public class TextBox extends Screen {
 			}
 
 			textview.setInputType(inputtype);
-			if ((constraints & TextField.CONSTRAINT_MASK) == TextField.ANY) {
-				textview.setSingleLine(false);
-				textview.setMaxLines(5);
-			}
 		}
 	}
 
@@ -161,14 +155,14 @@ public class TextBox extends Screen {
 		return constraints;
 	}
 
-	public void setInitialInputMode(String characterSubset) {
-	}
-
 	public View getScreenView() {
 		if (scrollview == null) {
 			Context context = getParentActivity();
 
 			textview = new EditText(context);
+
+			// textview.setBackgroundDrawable(Item.createBackground(context));
+			// textview.setTextColor(context.getResources().getColor(android.R.color.white));
 
 			setMaxSize(maxSize);
 			setConstraints(constraints);

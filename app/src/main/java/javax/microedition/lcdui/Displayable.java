@@ -1,7 +1,7 @@
 /*
  * Copyright 2012 Kulikov Dmitriy
  * Copyright 2015-2016 Nickolay Savchenko
- * Copyright 2017-2018 Nikita Shakarun
+ * Copyright 2017 Nikita Shakarun
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,7 @@
 
 package javax.microedition.lcdui;
 
-import android.support.v7.app.AppCompatActivity;
+import android.view.MenuItem;
 import android.view.View;
 
 import java.util.ArrayList;
@@ -26,8 +26,11 @@ import java.util.ArrayList;
 import javax.microedition.lcdui.event.CommandActionEvent;
 import javax.microedition.lcdui.event.Event;
 import javax.microedition.lcdui.event.EventQueue;
+import javax.microedition.lcdui.pointer.VirtualKeyboard;
 import javax.microedition.shell.MicroActivity;
 import javax.microedition.util.ContextHolder;
+
+import ua.naiksoftware.j2meloader.R;
 
 public abstract class Displayable {
 	private MicroActivity parent;
@@ -54,7 +57,7 @@ public abstract class Displayable {
 		clearDisplayableView();
 	}
 
-	public AppCompatActivity getParentActivity() {
+	public MicroActivity getParentActivity() {
 		if (parent == null) {
 			return ContextHolder.getCurrentActivity();
 		}
@@ -65,7 +68,7 @@ public abstract class Displayable {
 		this.title = title;
 
 		if (parent != null) {
-			parent.getSupportActionBar().setTitle(title);
+			parent.setTitle(title);
 		}
 	}
 
@@ -105,10 +108,6 @@ public abstract class Displayable {
 		return commands.toArray(new Command[0]);
 	}
 
-	public CommandListener getCommandListener() {
-		return listener;
-	}
-
 	public void setCommandListener(CommandListener listener) {
 		this.listener = listener;
 	}
@@ -117,6 +116,50 @@ public abstract class Displayable {
 		if (listener != null) {
 			queue.postEvent(CommandActionEvent.getInstance(listener, c, d));
 		}
+	}
+
+	private void switchLayoutEditMode(int mode) {
+		if (this instanceof Canvas && ContextHolder.getVk() != null) {
+			ContextHolder.getVk().switchLayoutEditMode(mode);
+		}
+	}
+
+	public boolean menuItemSelected(MenuItem item) {
+		int id = item.getItemId();
+		if (item.getGroupId() == R.id.action_group_common_settings) {
+			if (id == R.id.action_exit_midlet) {
+				parent.showExitConfirmation();
+			} else if (this instanceof Canvas && ContextHolder.getVk() != null) {
+				VirtualKeyboard vk = ContextHolder.getVk();
+				switch (id) {
+					case R.id.action_layout_edit_mode:
+						vk.switchLayoutEditMode(VirtualKeyboard.LAYOUT_KEYS);
+						break;
+					case R.id.action_layout_scale_mode:
+						vk.switchLayoutEditMode(VirtualKeyboard.LAYOUT_SCALES);
+						break;
+					case R.id.action_layout_edit_finish:
+						vk.switchLayoutEditMode(VirtualKeyboard.LAYOUT_EOF);
+						break;
+					case R.id.action_layout_switch:
+						vk.switchLayout();
+						break;
+				}
+			}
+			return true;
+		}
+
+		if (listener == null) {
+			return false;
+		}
+
+		for (Command cmd : commands) {
+			if (cmd.hashCode() == id) {
+				queue.postEvent(CommandActionEvent.getInstance(listener, cmd, this));
+				return true;
+			}
+		}
+		return false;
 	}
 
 	public EventQueue getEventQueue() {

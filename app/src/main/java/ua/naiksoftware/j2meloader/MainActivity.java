@@ -1,18 +1,20 @@
 /*
+ * J2ME Loader
  * Copyright (C) 2015-2016 Nickolay Savchenko
  * Copyright (C) 2017 Nikita Shakarun
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 package ua.naiksoftware.j2meloader;
@@ -41,12 +43,14 @@ import java.util.LinkedHashMap;
 import javax.microedition.shell.ConfigActivity;
 
 import ua.naiksoftware.util.FileUtils;
+import com.xl.game.tool.UnzipAssets;
+import java.io.IOException;
+import ua.naiksoftware.util.Log;
 
-public class MainActivity extends AppCompatActivity implements
+public class MainActivity extends BaseActivity implements
 		NavigationDrawerFragment.SelectedCallback {
 
 	private static final int MY_PERMISSIONS_REQUEST_WRITE_STORAGE = 0;
-	public static final String APP_LIST_KEY = "apps";
 	/**
 	 * Fragment managing the behaviors, interactions and presentation of the
 	 * navigation drawer.
@@ -70,8 +74,29 @@ public class MainActivity extends AppCompatActivity implements
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-
-		if (ContextCompat.checkSelfPermission(this,
+    //解压资源
+		//调试目录
+		String text = "";
+		text+="getPackResourcePath:"+getPackageResourcePath()+"\n";
+		text+="getPackageCodePath:"+getPackageCodePath()+"\n";
+		text+="dataDir:"+getApplicationInfo().dataDir+"\n";
+		
+		Log.e("MainActivity",text);
+		try
+		{
+			UnzipAssets.unZip(this, "load.zip", getApplicationInfo().dataDir, true);
+		} catch(IOException e)
+		{
+			Toast.makeText(this,"解压资源失败",0).show();
+			e.printStackTrace();
+			Log.e("error",e.getMessage());
+		}
+		catch(Exception e)
+		{
+			Toast.makeText(this,"解压资源出错",0).show();
+			e.printStackTrace();
+		}
+		if(ContextCompat.checkSelfPermission(this,
 				Manifest.permission.WRITE_EXTERNAL_STORAGE)
 				!= PackageManager.PERMISSION_GRANTED) {
 
@@ -95,20 +120,22 @@ public class MainActivity extends AppCompatActivity implements
 	private void setupActivity() {
 		setContentView(R.layout.activity_main);
 
-		mNavigationDrawerFragment = (NavigationDrawerFragment) getSupportFragmentManager().findFragmentById(R.id.navigation_drawer);
+		mNavigationDrawerFragment = (NavigationDrawerFragment) getSupportFragmentManager()
+				.findFragmentById(R.id.navigation_drawer);
 		mTitle = getTitle();
 
 		// Set up the drawer.
-		mNavigationDrawerFragment.setUp(R.id.navigation_drawer, (DrawerLayout) findViewById(R.id.drawer_layout));
+		mNavigationDrawerFragment.setUp(R.id.navigation_drawer,
+				(DrawerLayout) findViewById(R.id.drawer_layout));
 		pathConverted = getApplicationInfo().dataDir + "/converted/";
 		appsListFragment = new AppsListFragment();
 		Bundle bundle = new Bundle();
-		bundle.putSerializable(APP_LIST_KEY, apps);
+		bundle.putSerializable("apps", apps);
 		appsListFragment.setArguments(bundle);
 		// update the main content by replacing fragments
 		FragmentManager fragmentManager = getSupportFragmentManager();
 		fragmentManager.beginTransaction()
-				.replace(R.id.container, appsListFragment).commitAllowingStateLoss();
+				.replace(R.id.container, appsListFragment).commit();
 		updateApps();
 	}
 
@@ -128,7 +155,7 @@ public class MainActivity extends AppCompatActivity implements
 		}
 	}
 
-	private void restoreActionBar() {
+	public void restoreActionBar() {
 		ActionBar actionBar = getSupportActionBar();
 		actionBar.setDisplayShowTitleEnabled(true);
 		actionBar.setTitle(mTitle);
