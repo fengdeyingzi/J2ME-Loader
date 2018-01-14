@@ -1,20 +1,18 @@
 /*
- * J2ME Loader
- * Copyright (C) 2015-2016 Nickolay Savchenko
- * Copyright (C) 2017 Nikita Shakarun
+ * Copyright 2015-2016 Nickolay Savchenko
+ * Copyright 2017-2018 Nikita Shakarun
  *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package ua.naiksoftware.util;
@@ -37,7 +35,11 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import ua.naiksoftware.j2meloader.JarConverter;
+
 public class FileUtils {
+
+	private static final int BUFFER_SIZE = 1024;
 
 	public static void moveFiles(String src, String dest, FilenameFilter filter) {
 		File fsrc = new File(src);
@@ -50,7 +52,11 @@ public class FileUtils {
 			if (entry.isDirectory()) {
 				moveFiles(entry.getPath(), to, filter);
 			} else {
-				entry.renameTo(new File(to));
+				try {
+					copyFileUsingChannel(entry, new File(to));
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
 			}
 		}
 	}
@@ -71,8 +77,10 @@ public class FileUtils {
 	public static void deleteDirectory(File dir) {
 		if (dir.isDirectory()) {
 			File[] listFiles = dir.listFiles();
-			for (File file : listFiles) {
-				deleteDirectory(file);
+			if (listFiles.length != 0) {
+				for (File file : listFiles) {
+					deleteDirectory(file);
+				}
 			}
 		}
 		dir.delete();
@@ -105,15 +113,15 @@ public class FileUtils {
 		return params;
 	}
 
-	public static String getPath(Context context, Uri uri) throws FileNotFoundException {
+	public static String getJarPath(Context context, Uri uri) throws FileNotFoundException {
 		InputStream in = context.getContentResolver().openInputStream(uri);
 		OutputStream out = null;
-		File folder = new File(context.getApplicationInfo().dataDir, "uri_tmp");
+		File folder = new File(context.getApplicationInfo().dataDir, JarConverter.TEMP_URI_FOLDER_NAME);
 		folder.mkdir();
-		File file = new File(folder, "tmp.jar");
+		File file = new File(folder, JarConverter.TEMP_JAR_NAME);
 		try {
 			out = new FileOutputStream(file);
-			byte[] buf = new byte[1024];
+			byte[] buf = new byte[BUFFER_SIZE];
 			int len;
 			while ((len = in.read(buf)) > 0) {
 				out.write(buf, 0, len);

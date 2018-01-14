@@ -19,7 +19,6 @@ package javax.microedition.util.param;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.os.Build;
 
 public class SharedPreferencesContainer implements DataContainer, DataEditor {
 	protected SharedPreferences prefs;
@@ -117,10 +116,7 @@ public class SharedPreferencesContainer implements DataContainer, DataEditor {
 	}
 
 	public void apply() {
-		if(Build.VERSION.SDK_INT>=9)
 		editor.apply();
-		else
-		editor.commit();
 	}
 
 	public boolean commit() {

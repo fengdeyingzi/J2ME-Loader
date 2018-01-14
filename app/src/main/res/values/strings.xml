@@ -1,17 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <string name="app_name" translatable="false">J2me Loader</string>
+    <string name="app_name" translatable="false">J2ME Loader</string>
     <string name="navigation_drawer_open" translatable="false">Open navigation drawer</string>
     <string name="navigation_drawer_close" translatable="false">Close navigation drawer</string>
 
     <string name="exit">Exit</string>
     <string name="about">About</string>
+    <string name="help">Help</string>
+    <string name="help_message">&#8226; Enabling filtering in some cases can greatly reduce performance. Disable this option if game is too slow.&lt;BR>&#8226; Image flickering issues can be fixed by enabling the "Immediate processing mode" option.</string>
     <string name="about_message">This app allows you to launch J2ME apps and games on Android. It supports most 2D games and also 3D with some limitations.&lt;BR></string>
     <string name="about_email" translatable="false">&lt;BR>Email: &lt;a href="mailto:j2me.loader@mail.ru">j2me.loader@mail.ru&lt;/a></string>
     <string name="about_github" translatable="false">&lt;BR>GitHub: &lt;a href="https://github.com/nikita36078/J2ME-Loader">github.com/nikita36078/J2ME-Loader&lt;/a></string>
     <string name="about_4pda" translatable="false">&lt;BR>4PDA: &lt;a href="http://4pda.ru/forum/index.php?showtopic=824201">4pda.ru/forum/index.php?showtopic=824201&lt;/a></string>
-    <string name="about_copyright" translatable="false">&lt;BR>&lt;BR>App icon designed by Aha-Soft (CC BY 3.0)</string>
+    <string name="about_crowdin" translatable="false">&lt;BR>Crowdin(translation): &lt;a href="https://crowdin.com/project/j2me-loader">crowdin.com/project/j2me-loader&lt;/a></string>
+    <string name="about_copyright" translatable="false">&lt;BR>&lt;BR>J2ME Loader&lt;BR>Copyright 2017-2018 Nikita Shakarun&lt;BR>App icon&lt;BR>Copyright 2017 Aha-Soft</string>
     <string name="open_jar">Open jar</string>
     <string name="author">Author: </string>
     <string name="version">Version: </string>
@@ -21,6 +24,7 @@
     <string name="convert_complete">Complete</string>
     <string name="converting_message">Processing...</string>
     <string name="permission_request_failed">This app requires storage write permission</string>
+    <string name="external_storage_not_mounted">This app requires external storage</string>
     <string name="action_context_shortcut">Add shortcut</string>
     <string name="action_settings">Settings</string>
     <string name="action_context_delete">Delete</string>
@@ -46,7 +50,7 @@
     <string name="PREF_VK_BACK" formatted="false">Buttons</string>
     <string name="PREF_VK_FORE" formatted="false">Labels</string>
     <string name="PREF_VK_OUTLINE" formatted="false">Outline</string>
-    <string name="PREF_COLOR_HINT" formatted="false">RGB</string>
+    <string name="PREF_COLOR_HINT" formatted="false" translatable="false">RGB</string>
     <string name="PREF_VK_ALPHA" formatted="false">Opacity: </string>
     <string name="PREF_VK_HIDE_DELAY" formatted="false">Hide delay: </string>
     <string name="PREF_UNIT_MS" formatted="false">ms</string>
@@ -69,6 +73,7 @@
 
     <string name="FORCE_CLOSE_CONFIRMATION" formatted="false">Force-closing the application may result in data loss or even break it completely!\nProceed?</string>
     <string name="CONFIRMATION_REQUIRED" formatted="false">Confirmation required</string>
+    <string name="select_dialog_title">Select MIDlet</string>
     <string name="crash_dialog_message">Do you want to send error report to the developer?</string>
     <string name="crash_dialog_title">Error detected</string>
     <string name="report_crash">Send</string>
@@ -77,6 +82,7 @@
     <string name="layout_edit_mode">Keylayout edit mode</string>
     <string name="layout_scale_mode">Keylayout resize mode</string>
     <string name="layout_switch">Switch keylayout</string>
+    <string name="hide_buttons">Hide buttons</string>
     <string name="common_settings">[COMMON SETTINGS]</string>
 
     <string name="pref_enable_actionbar_title">Enable ActionBar</string>

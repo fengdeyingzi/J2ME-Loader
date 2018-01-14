@@ -1,28 +1,25 @@
 /*
- * J2ME Loader
- * Copyright (C) 2015-2016 Nickolay Savchenko
- * Copyright (C) 2017 Nikita Shakarun
+ * Copyright 2015-2016 Nickolay Savchenko
+ * Copyright 2017-2018 Nikita Shakarun
  *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package ua.naiksoftware.j2meloader;
-/*
+
 import android.support.v4.content.pm.ShortcutInfoCompat;
 import android.support.v4.content.pm.ShortcutManagerCompat;
 import android.support.v4.graphics.drawable.IconCompat;
-*/
 import android.support.v7.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -52,7 +49,7 @@ public class AppsListFragment extends ListFragment {
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		apps = (ArrayList<AppItem>) getArguments().getSerializable("apps");
+		apps = (ArrayList<AppItem>) getArguments().getSerializable(MainActivity.APP_LIST_KEY);
 	}
 
 	@Override
@@ -62,7 +59,7 @@ public class AppsListFragment extends ListFragment {
 		registerForContextMenu(getListView());
 	}
 
-	private void showDialog(final int id) {
+	private void showDeleteDialog(final int id) {
 		AlertDialog.Builder builder = new AlertDialog.Builder(getActivity())
 				.setTitle(android.R.string.dialog_alert_title)
 				.setMessage(R.string.message_delete)
@@ -86,7 +83,7 @@ public class AppsListFragment extends ListFragment {
 	public void onListItemClick(ListView l, View v, int position, long id) {
 		AppItem item = apps.get(position);
 		Intent i = new Intent(Intent.ACTION_DEFAULT, Uri.parse(item.getPath()), getActivity(), ConfigActivity.class);
-		i.putExtra("name", item.getTitle());
+		i.putExtra(ConfigActivity.MIDLET_NAME_KEY, item.getTitle());
 		startActivity(i);
 	}
 
@@ -104,10 +101,9 @@ public class AppsListFragment extends ListFragment {
 		AppItem appItem = apps.get(index);
 		switch (item.getItemId()) {
 			case R.id.action_context_shortcut:
-				/*
 				Bitmap bitmap = BitmapFactory.decodeFile(appItem.getImagePath());
 				Intent launchIntent = new Intent(Intent.ACTION_DEFAULT, Uri.parse(appItem.getPath()), getActivity(), ConfigActivity.class);
-				launchIntent.putExtra("name", appItem.getTitle());
+				launchIntent.putExtra(ConfigActivity.MIDLET_NAME_KEY, appItem.getTitle());
 				ShortcutInfoCompat.Builder shortcutInfoCompatBuilder = new ShortcutInfoCompat.Builder(getActivity(), appItem.getTitle())
 						.setIntent(launchIntent)
 						.setShortLabel(appItem.getTitle());
@@ -118,15 +114,14 @@ public class AppsListFragment extends ListFragment {
 				}
 				ShortcutManagerCompat.requestPinShortcut(getActivity(), shortcutInfoCompatBuilder.build(), null);
 				break;
-				*/
 			case R.id.action_context_settings:
 				Intent i = new Intent(Intent.ACTION_DEFAULT, Uri.parse(appItem.getPath()), getActivity(), ConfigActivity.class);
-				i.putExtra("name", appItem.getTitle());
-				i.putExtra("showSettings", true);
+				i.putExtra(ConfigActivity.MIDLET_NAME_KEY, appItem.getTitle());
+				i.putExtra(ConfigActivity.SHOW_SETTINGS_KEY, true);
 				startActivity(i);
 				break;
 			case R.id.action_context_delete:
-				showDialog(index);
+				showDeleteDialog(index);
 				break;
 		}
 		return super.onContextItemSelected(item);

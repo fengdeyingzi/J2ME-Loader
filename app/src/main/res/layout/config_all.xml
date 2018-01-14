@@ -1,406 +1,390 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ScrollView
-	xmlns:android="http://schemas.android.com/apk/res/android"
-	android:layout_width="match_parent"
-	android:layout_height="match_parent">
-
-	<LinearLayout
-		android:layout_width="match_parent"
-		android:layout_height="wrap_content"
-		android:orientation="vertical">
-
-		<TextView
-			android:layout_width="match_parent"
-			android:layout_height="wrap_content"
-			android:layout_margin="5dp"
-			android:text="@string/PREF_SCREEN_OPTIONS"
-			android:textAppearance="?android:attr/textAppearanceLarge"/>
-
-		<LinearLayout
-			android:layout_width="match_parent"
-			android:layout_height="wrap_content">
-
-			<EditText
-				android:id="@+id/tfScreenWidth"
-				android:layout_width="0dp"
-				android:layout_height="wrap_content"
-				android:layout_weight="1"
-				android:gravity="center"
-				android:hint="@string/PREF_WIDTH"
-				android:inputType="numberSigned"
-				android:maxLines="1"/>
-
-			<TextView
-				android:layout_width="wrap_content"
-				android:layout_height="wrap_content"
-				android:text="@string/_RESOLUTION_SEPARATOR"
-				android:textAppearance="?android:attr/textAppearanceMedium"/>
-
-			<EditText
-				android:id="@+id/tfScreenHeight"
-				android:layout_width="0dp"
-				android:layout_height="wrap_content"
-				android:layout_weight="1"
-				android:gravity="center"
-				android:hint="@string/PREF_HEIGHT"
-				android:inputType="numberSigned"
-				android:maxLines="1"/>
-
-		</LinearLayout>
-
-		<LinearLayout
-			android:layout_width="match_parent"
-			android:layout_height="match_parent"
-			android:orientation="horizontal">
-
-			<Button
-				android:id="@+id/cmdScreenSizePresets"
-				android:layout_width="0dp"
-				android:layout_height="match_parent"
-				android:layout_weight="1"
-				android:text="@string/SIZE_PRESETS"/>
-
-			<Button
-				android:id="@+id/cmdSwapSizes"
-				android:layout_width="0dp"
-				android:layout_height="match_parent"
-				android:layout_weight="1"
-				android:text="@string/SWAP_SIZES"/>
-
-		</LinearLayout>
-
-		<LinearLayout
-			android:layout_width="match_parent"
-			android:layout_height="wrap_content">
-
-			<Button
-				android:id="@+id/cmdScreenBack"
-				android:layout_width="wrap_content"
-				android:layout_height="wrap_content"
-				android:text="@string/PREF_BACKGROUND"/>
-
-			<EditText
-				android:id="@+id/tfScreenBack"
-				android:layout_width="0dip"
-				android:layout_height="wrap_content"
-				android:layout_gravity="center"
-				android:layout_weight="1"
-				android:gravity="center"
-				android:hint="@string/PREF_COLOR_HINT"/>
-
-		</LinearLayout>
-
-		<LinearLayout
-			android:layout_width="match_parent"
-			android:layout_height="wrap_content"
-			android:orientation="horizontal"
-			android:gravity="left|center">
-
-			<TextView
-				android:layout_width="wrap_content"
-				android:layout_height="wrap_content"
-				android:layout_weight="1"
-				android:text="@string/PREF_SCALE_RATIO"
-				android:textAppearance="?android:attr/textAppearanceMedium"/>
-
-			<SeekBar
-				android:id="@+id/sbScaleRatio"
-				android:layout_width="wrap_content"
-				android:layout_height="wrap_content"
-				android:layout_weight="30"
-				android:max="100"/>
-
-			<EditText
-				android:id="@+id/tfScaleRatioValue"
-				android:layout_width="wrap_content"
-				android:layout_height="wrap_content"
-				android:layout_weight="1"
-				android:ems="2"
-				android:inputType="numberDecimal"/>
-
-		</LinearLayout>
-
-		<CheckBox
-			android:id="@+id/cxScaleToFit"
-			android:layout_width="match_parent"
-			android:layout_height="wrap_content"
-			android:checked="true"
-			android:text="@string/PREF_SCALE_TO_FIT"/>
-
-		<CheckBox
-			android:id="@+id/cxKeepAspectRatio"
-			android:layout_width="match_parent"
-			android:layout_height="wrap_content"
-			android:checked="true"
-			android:text="@string/PREF_KEEP_ASPECT_RATIO"/>
-
-		<CheckBox
-			android:id="@+id/cxFilter"
-			android:layout_width="match_parent"
-			android:layout_height="wrap_content"
-			android:checked="true"
-			android:text="@string/PREF_FILTER"/>
-
-		<CheckBox
-			android:id="@+id/cxImmediate"
-			android:layout_width="match_parent"
-			android:layout_height="wrap_content"
-			android:checked="false"
-			android:text="@string/PREF_IMMEDIATE"/>
-
-		<CheckBox
-			android:id="@+id/cxClearBuffer"
-			android:layout_width="match_parent"
-			android:layout_height="wrap_content"
-			android:checked="false"
-			android:text="@string/PREF_CLEAR_BUFFER"/>
-
-		<TextView
-			android:layout_width="match_parent"
-			android:layout_height="wrap_content"
-			android:layout_margin="5dp"
-			android:text="@string/PREF_FONT_OPTIONS"
-			android:textAppearance="?android:attr/textAppearanceLarge"/>
-
-		<LinearLayout
-			android:layout_width="match_parent"
-			android:layout_height="wrap_content">
-
-			<EditText
-				android:id="@+id/tfFontSizeSmall"
-				android:layout_width="0dp"
-				android:layout_height="wrap_content"
-				android:layout_weight="1"
-				android:gravity="center"
-				android:hint="@string/PREF_FONT_SMALL"
-				android:inputType="number"/>
-
-			<TextView
-				android:layout_width="wrap_content"
-				android:layout_height="wrap_content"
-				android:text="@string/_FONT_SEPARATOR"
-				android:textAppearance="?android:attr/textAppearanceMedium"/>
-
-			<EditText
-				android:id="@+id/tfFontSizeMedium"
-				android:layout_width="0dp"
-				android:layout_height="wrap_content"
-				android:layout_weight="1"
-				android:gravity="center"
-				android:hint="@string/PREF_FONT_MEDIUM"
-				android:inputType="number"/>
-
-			<TextView
-				android:layout_width="wrap_content"
-				android:layout_height="wrap_content"
-				android:text="@string/_FONT_SEPARATOR"
-				android:textAppearance="?android:attr/textAppearanceMedium"/>
-
-			<EditText
-				android:id="@+id/tfFontSizeLarge"
-				android:layout_width="0dp"
-				android:layout_height="wrap_content"
-				android:layout_weight="1"
-				android:gravity="center"
-				android:hint="@string/PREF_FONT_LARGE"
-				android:inputType="number"/>
-
-		</LinearLayout>
-
-		<Button
-			android:id="@+id/cmdFontSizePresets"
-			android:layout_width="match_parent"
-			android:layout_height="wrap_content"
-			android:text="@string/SIZE_PRESETS"/>
-
-		<CheckBox
-			android:id="@+id/cxFontSizeInSP"
-			android:layout_width="match_parent"
-			android:layout_height="wrap_content"
-			android:text="@string/PREF_FONT_SIZE_IN_SP"/>
-
-		<TextView
-			android:layout_width="wrap_content"
-			android:layout_height="wrap_content"
-			android:layout_margin="5dp"
-			android:text="@string/PREF_MISC"
-			android:textAppearance="?android:attr/textAppearanceLarge"/>
-
-		<Button
-			android:id="@+id/cmdLanguage"
-			android:layout_width="match_parent"
-			android:layout_height="wrap_content"
-			android:text="@string/PREF_LANGUAGE"/>
-
-		<TextView
-			android:layout_width="match_parent"
-			android:layout_height="wrap_content"
-			android:layout_margin="5dp"
-			android:text="@string/PREF_VIRTUAL_KEYBOARD_OPTIONS"
-			android:textAppearance="?android:attr/textAppearanceLarge"/>
-
-		<TableLayout
-			android:layout_width="match_parent"
-			android:layout_height="wrap_content">
-
-			<CheckBox
-				android:id="@+id/cxIsShowKeyboard"
-				android:layout_width="match_parent"
-				android:layout_height="wrap_content"
-				android:text="@string/PREF_VK_SHOW"/>
-
-			<TableRow>
-
-				<TextView
-					android:layout_width="wrap_content"
-					android:layout_height="wrap_content"
-					android:layout_gravity="left"
-					android:gravity="center"
-					android:text="@string/PREF_VK_ALPHA"
-					android:textAppearance="?android:attr/textAppearanceMedium"/>
-
-				<SeekBar
-					android:id="@+id/sbVKAlpha"
-					android:layout_width="0dp"
-					android:layout_height="wrap_content"
-					android:layout_weight="1"
-					android:max="255"/>
-
-			</TableRow>
-
-			<TableRow>
-
-				<TextView
-					android:layout_width="wrap_content"
-					android:layout_height="match_parent"
-					android:layout_gravity="left"
-					android:gravity="center"
-					android:text="@string/PREF_VK_HIDE_DELAY"
-					android:textAppearance="?android:attr/textAppearanceMedium"/>
-
-				<LinearLayout
-					android:layout_width="0dp"
-					android:layout_height="wrap_content"
-					android:layout_weight="1">
-
-					<EditText
-						android:id="@+id/tfVKHideDelay"
-						android:layout_width="0dip"
-						android:layout_height="wrap_content"
-						android:layout_weight="1"
-						android:gravity="center"
-						android:hint="@string/_MINUS_ONE"
-						android:inputType="number|numberSigned"/>
-
-					<TextView
-						android:layout_width="wrap_content"
-						android:layout_height="wrap_content"
-						android:text="@string/PREF_UNIT_MS"
-						android:textAppearance="?android:attr/textAppearanceMedium"/>
-
-				</LinearLayout>
-
-			</TableRow>
-
-		</TableLayout>
-
-		<TableLayout
-			android:layout_width="match_parent"
-			android:layout_height="wrap_content">
-
-			<TableRow>
-
-				<Button
-					android:id="@+id/cmdVKFore"
-					android:layout_width="wrap_content"
-					android:layout_height="wrap_content"
-					android:text="@string/PREF_VK_FORE"/>
-
-				<EditText
-					android:id="@+id/tfVKFore"
-					android:layout_width="0dp"
-					android:layout_height="wrap_content"
-					android:layout_weight="1"
-					android:gravity="center"
-					android:hint="@string/PREF_COLOR_HINT"/>
-
-			</TableRow>
-
-			<TableRow>
-
-				<Button
-					android:id="@+id/cmdVKBack"
-					android:layout_width="wrap_content"
-					android:layout_height="wrap_content"
-					android:text="@string/PREF_VK_BACK"/>
-
-				<EditText
-					android:id="@+id/tfVKBack"
-					android:layout_width="0dp"
-					android:layout_height="wrap_content"
-					android:layout_weight="1"
-					android:gravity="center"
-					android:hint="@string/PREF_COLOR_HINT"/>
-
-			</TableRow>
-
-			<TableRow>
-
-				<Button
-					android:id="@+id/cmdVKSelBack"
-					android:layout_width="wrap_content"
-					android:layout_height="wrap_content"
-					android:text="@string/PREF_VK_SEL_FORE"/>
-
-				<EditText
-					android:id="@+id/tfVKSelBack"
-					android:layout_width="0dp"
-					android:layout_height="wrap_content"
-					android:layout_weight="1"
-					android:gravity="center"
-					android:hint="@string/PREF_COLOR_HINT"/>
-
-			</TableRow>
-
-			<TableRow>
-
-				<Button
-					android:id="@+id/cmdVKSelFore"
-					android:layout_width="wrap_content"
-					android:layout_height="wrap_content"
-					android:text="@string/PREF_VK_SEL_BACK"/>
-
-				<EditText
-					android:id="@+id/tfVKSelFore"
-					android:layout_width="0dp"
-					android:layout_height="wrap_content"
-					android:layout_weight="1"
-					android:gravity="center"
-					android:hint="@string/PREF_COLOR_HINT"/>
-
-			</TableRow>
-
-			<TableRow>
-
-				<Button
-					android:id="@+id/cmdVKOutline"
-					android:layout_width="wrap_content"
-					android:layout_height="wrap_content"
-					android:text="@string/PREF_VK_OUTLINE"/>
-
-				<EditText
-					android:id="@+id/tfVKOutline"
-					android:layout_width="0dp"
-					android:layout_height="wrap_content"
-					android:layout_weight="1"
-					android:gravity="center"
-					android:hint="@string/PREF_COLOR_HINT"/>
-
-			</TableRow>
-
-		</TableLayout>
-
-	</LinearLayout>
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="5dp"
+            android:text="@string/PREF_SCREEN_OPTIONS"
+            android:textAppearance="?android:attr/textAppearanceLarge"/>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <EditText
+                android:id="@+id/tfScreenWidth"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:hint="@string/PREF_WIDTH"
+                android:inputType="numberSigned"
+                android:maxLines="1"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/_RESOLUTION_SEPARATOR"
+                android:textAppearance="?android:attr/textAppearanceMedium"/>
+
+            <EditText
+                android:id="@+id/tfScreenHeight"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:hint="@string/PREF_HEIGHT"
+                android:inputType="numberSigned"
+                android:maxLines="1"/>
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/cmdScreenSizePresets"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:text="@string/SIZE_PRESETS"/>
+
+            <Button
+                android:id="@+id/cmdSwapSizes"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:text="@string/SWAP_SIZES"/>
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <Button
+                android:id="@+id/cmdScreenBack"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/PREF_BACKGROUND"/>
+
+            <EditText
+                android:id="@+id/tfScreenBack"
+                android:layout_width="0dip"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:hint="@string/PREF_COLOR_HINT"/>
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/PREF_SCALE_RATIO"
+                android:textAppearance="?android:attr/textAppearanceMedium"/>
+
+            <SeekBar
+                android:id="@+id/sbScaleRatio"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_weight="30"
+                android:max="100"/>
+
+            <EditText
+                android:id="@+id/tfScaleRatioValue"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:ems="2"
+                android:inputType="numberDecimal"/>
+
+        </LinearLayout>
+
+        <CheckBox
+            android:id="@+id/cxScaleToFit"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:checked="true"
+            android:text="@string/PREF_SCALE_TO_FIT"/>
+
+        <CheckBox
+            android:id="@+id/cxKeepAspectRatio"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:checked="true"
+            android:text="@string/PREF_KEEP_ASPECT_RATIO"/>
+
+        <CheckBox
+            android:id="@+id/cxFilter"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:checked="true"
+            android:text="@string/PREF_FILTER"/>
+
+        <CheckBox
+            android:id="@+id/cxImmediate"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:checked="false"
+            android:text="@string/PREF_IMMEDIATE"/>
+
+        <CheckBox
+            android:id="@+id/cxClearBuffer"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:checked="false"
+            android:text="@string/PREF_CLEAR_BUFFER"/>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="5dp"
+            android:text="@string/PREF_FONT_OPTIONS"
+            android:textAppearance="?android:attr/textAppearanceLarge"/>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <EditText
+                android:id="@+id/tfFontSizeSmall"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:hint="@string/PREF_FONT_SMALL"
+                android:inputType="number"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/_FONT_SEPARATOR"
+                android:textAppearance="?android:attr/textAppearanceMedium"/>
+
+            <EditText
+                android:id="@+id/tfFontSizeMedium"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:hint="@string/PREF_FONT_MEDIUM"
+                android:inputType="number"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/_FONT_SEPARATOR"
+                android:textAppearance="?android:attr/textAppearanceMedium"/>
+
+            <EditText
+                android:id="@+id/tfFontSizeLarge"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:hint="@string/PREF_FONT_LARGE"
+                android:inputType="number"/>
+        </LinearLayout>
+
+        <Button
+            android:id="@+id/cmdFontSizePresets"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/SIZE_PRESETS"/>
+
+        <CheckBox
+            android:id="@+id/cxFontSizeInSP"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/PREF_FONT_SIZE_IN_SP"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="5dp"
+            android:text="@string/PREF_MISC"
+            android:textAppearance="?android:attr/textAppearanceLarge"/>
+
+        <Button
+            android:id="@+id/cmdLanguage"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/PREF_LANGUAGE"/>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="5dp"
+            android:text="@string/PREF_VIRTUAL_KEYBOARD_OPTIONS"
+            android:textAppearance="?android:attr/textAppearanceLarge"/>
+
+        <TableLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <CheckBox
+                android:id="@+id/cxIsShowKeyboard"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/PREF_VK_SHOW"/>
+
+            <TableRow>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="left"
+                    android:gravity="center"
+                    android:text="@string/PREF_VK_ALPHA"
+                    android:textAppearance="?android:attr/textAppearanceMedium"/>
+
+                <SeekBar
+                    android:id="@+id/sbVKAlpha"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:max="255"/>
+            </TableRow>
+
+            <TableRow>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:layout_gravity="left"
+                    android:gravity="center"
+                    android:text="@string/PREF_VK_HIDE_DELAY"
+                    android:textAppearance="?android:attr/textAppearanceMedium"/>
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1">
+
+                    <EditText
+                        android:id="@+id/tfVKHideDelay"
+                        android:layout_width="0dip"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:gravity="center"
+                        android:hint="@string/_MINUS_ONE"
+                        android:inputType="number|numberSigned"/>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/PREF_UNIT_MS"
+                        android:textAppearance="?android:attr/textAppearanceMedium"/>
+                </LinearLayout>
+            </TableRow>
+        </TableLayout>
+
+        <TableLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <TableRow>
+
+                <Button
+                    android:id="@+id/cmdVKFore"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/PREF_VK_FORE"/>
+
+                <EditText
+                    android:id="@+id/tfVKFore"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:hint="@string/PREF_COLOR_HINT"/>
+            </TableRow>
+
+            <TableRow>
+
+                <Button
+                    android:id="@+id/cmdVKBack"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/PREF_VK_BACK"/>
+
+                <EditText
+                    android:id="@+id/tfVKBack"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:hint="@string/PREF_COLOR_HINT"/>
+            </TableRow>
+
+            <TableRow>
+
+                <Button
+                    android:id="@+id/cmdVKSelBack"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/PREF_VK_SEL_FORE"/>
+
+                <EditText
+                    android:id="@+id/tfVKSelBack"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:hint="@string/PREF_COLOR_HINT"/>
+            </TableRow>
+
+            <TableRow>
+
+                <Button
+                    android:id="@+id/cmdVKSelFore"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/PREF_VK_SEL_BACK"/>
+
+                <EditText
+                    android:id="@+id/tfVKSelFore"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:hint="@string/PREF_COLOR_HINT"/>
+            </TableRow>
+
+            <TableRow>
+
+                <Button
+                    android:id="@+id/cmdVKOutline"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/PREF_VK_OUTLINE"/>
+
+                <EditText
+                    android:id="@+id/tfVKOutline"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:hint="@string/PREF_COLOR_HINT"/>
+            </TableRow>
+        </TableLayout>
+    </LinearLayout>
 
 </ScrollView>
-

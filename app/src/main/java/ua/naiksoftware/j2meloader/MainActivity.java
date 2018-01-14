@@ -1,29 +1,30 @@
 /*
- * J2ME Loader
- * Copyright (C) 2015-2016 Nickolay Savchenko
- * Copyright (C) 2017 Nikita Shakarun
+ * Copyright 2015-2016 Nickolay Savchenko
+ * Copyright 2017-2018 Nikita Shakarun
  *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package ua.naiksoftware.j2meloader;
 
 import android.Manifest;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
+import android.preference.PreferenceManager;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.content.ContextCompat;
@@ -37,20 +38,19 @@ import android.widget.Toast;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FilenameFilter;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.LinkedHashMap;
 
 import javax.microedition.shell.ConfigActivity;
 
 import ua.naiksoftware.util.FileUtils;
-import com.xl.game.tool.UnzipAssets;
-import java.io.IOException;
-import ua.naiksoftware.util.Log;
 
-public class MainActivity extends BaseActivity implements
-		NavigationDrawerFragment.SelectedCallback {
+public class MainActivity extends AppCompatActivity implements NavigationDrawerFragment.SelectedCallback {
 
-	private static final int MY_PERMISSIONS_REQUEST_WRITE_STORAGE = 0;
+	public static final String APP_LIST_KEY = "apps";
 	/**
 	 * Fragment managing the behaviors, interactions and presentation of the
 	 * navigation drawer.
@@ -65,54 +65,34 @@ public class MainActivity extends BaseActivity implements
 
 	private AppsListFragment appsListFragment;
 	private ArrayList<AppItem> apps = new ArrayList<AppItem>();
-
-	/**
-	 * путь к папке со сконвертированными приложениями
-	 */
-	private String pathConverted;
+	private static final int MY_PERMISSIONS_REQUEST_WRITE_STORAGE = 0;
+	private static final Comparator<SortItem> comparator = new AlphabeticComparator<SortItem>();
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-    //解压资源
-		//调试目录
-		String text = "";
-		text+="getPackResourcePath:"+getPackageResourcePath()+"\n";
-		text+="getPackageCodePath:"+getPackageCodePath()+"\n";
-		text+="dataDir:"+getApplicationInfo().dataDir+"\n";
-		
-		Log.e("MainActivity",text);
-		try
-		{
-			UnzipAssets.unZip(this, "load.zip", getApplicationInfo().dataDir, true);
-		} catch(IOException e)
-		{
-			Toast.makeText(this,"解压资源失败",0).show();
-			e.printStackTrace();
-			Log.e("error",e.getMessage());
+		Uri uri = getIntent().getData();
+		if (!isTaskRoot() && uri == null) {
+			finish();
+			return;
 		}
-		catch(Exception e)
-		{
-			Toast.makeText(this,"解压资源出错",0).show();
-			e.printStackTrace();
+		if (!Environment.MEDIA_MOUNTED.equals(Environment.getExternalStorageState())) {
+			Toast.makeText(this, R.string.external_storage_not_mounted, Toast.LENGTH_SHORT).show();
+			finish();
 		}
-		if(ContextCompat.checkSelfPermission(this,
-				Manifest.permission.WRITE_EXTERNAL_STORAGE)
+		if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)
 				!= PackageManager.PERMISSION_GRANTED) {
-
-			ActivityCompat.requestPermissions(this,
-					new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
+			ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
 					MY_PERMISSIONS_REQUEST_WRITE_STORAGE);
 		} else {
 			setupActivity();
-		}
-		Uri uri = getIntent().getData();
-		if (savedInstanceState == null && uri != null) {
-			JarConverter converter = new JarConverter(this);
-			try {
-				converter.execute(FileUtils.getPath(this, uri), pathConverted);
-			} catch (FileNotFoundException e) {
-				e.printStackTrace();
+			if (savedInstanceState == null && uri != null) {
+				JarConverter converter = new JarConverter(this);
+				try {
+					converter.execute(FileUtils.getJarPath(this, uri), ConfigActivity.APP_DIR);
+				} catch (FileNotFoundException e) {
+					e.printStackTrace();
+				}
 			}
 		}
 	}
@@ -120,22 +100,20 @@ public class MainActivity extends BaseActivity implements
 	private void setupActivity() {
 		setContentView(R.layout.activity_main);
 
-		mNavigationDrawerFragment = (NavigationDrawerFragment) getSupportFragmentManager()
-				.findFragmentById(R.id.navigation_drawer);
+		mNavigationDrawerFragment = (NavigationDrawerFragment) getSupportFragmentManager().findFragmentById(R.id.navigation_drawer);
 		mTitle = getTitle();
 
 		// Set up the drawer.
-		mNavigationDrawerFragment.setUp(R.id.navigation_drawer,
-				(DrawerLayout) findViewById(R.id.drawer_layout));
-		pathConverted = getApplicationInfo().dataDir + "/converted/";
+		mNavigationDrawerFragment.setUp(R.id.navigation_drawer, (DrawerLayout) findViewById(R.id.drawer_layout));
+		moveToNewLocation();
 		appsListFragment = new AppsListFragment();
 		Bundle bundle = new Bundle();
-		bundle.putSerializable("apps", apps);
+		bundle.putSerializable(APP_LIST_KEY, apps);
 		appsListFragment.setArguments(bundle);
 		// update the main content by replacing fragments
 		FragmentManager fragmentManager = getSupportFragmentManager();
 		fragmentManager.beginTransaction()
-				.replace(R.id.container, appsListFragment).commit();
+				.replace(R.id.container, appsListFragment).commitAllowingStateLoss();
 		updateApps();
 	}
 
@@ -143,22 +121,45 @@ public class MainActivity extends BaseActivity implements
 	public void onRequestPermissionsResult(int requestCode,
 										   String permissions[], int[] grantResults) {
 		switch (requestCode) {
-			case MY_PERMISSIONS_REQUEST_WRITE_STORAGE: {
-				if (grantResults.length > 0
-						&& grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+			case MY_PERMISSIONS_REQUEST_WRITE_STORAGE:
+				if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
 					setupActivity();
 				} else {
 					Toast.makeText(this, R.string.permission_request_failed, Toast.LENGTH_SHORT).show();
 					finish();
 				}
-			}
+				break;
 		}
 	}
 
-	public void restoreActionBar() {
+	private void restoreActionBar() {
 		ActionBar actionBar = getSupportActionBar();
 		actionBar.setDisplayShowTitleEnabled(true);
 		actionBar.setTitle(mTitle);
+	}
+
+	private void moveToNewLocation() {
+		SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(this);
+		boolean dataMoved = sp.getBoolean("pref_data_moved", false);
+		if (!dataMoved) {
+			File oldConvertedDir = new File(getApplicationInfo().dataDir, ConfigActivity.MIDLET_DIR);
+			File oldDataDir = getFilesDir();
+			if (oldConvertedDir.exists() && oldConvertedDir.listFiles().length > 0) {
+				FileUtils.moveFiles(oldConvertedDir.getPath(), ConfigActivity.APP_DIR, null);
+				FileUtils.deleteDirectory(oldConvertedDir);
+
+				if (oldDataDir.exists() && oldDataDir.listFiles().length > 0) {
+					FileUtils.moveFiles(oldDataDir.getPath(), ConfigActivity.DATA_DIR, new FilenameFilter() {
+						@Override
+						public boolean accept(File file, String s) {
+							return !s.endsWith(".stacktrace");
+						}
+					});
+					FileUtils.deleteDirectory(oldDataDir);
+				}
+			}
+			sp.edit().putBoolean("pref_data_moved", true).apply();
+		}
 	}
 
 	@Override
@@ -178,12 +179,16 @@ public class MainActivity extends BaseActivity implements
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch (item.getItemId()) {
 			case R.id.action_about:
-				AboutDialogFragment dialogFragment = new AboutDialogFragment();
-				dialogFragment.show(getSupportFragmentManager(), "about");
+				AboutDialogFragment aboutDialogFragment = new AboutDialogFragment();
+				aboutDialogFragment.show(getSupportFragmentManager(), "about");
 				break;
 			case R.id.action_settings:
 				Intent intent = new Intent(this, SettingsActivity.class);
 				startActivity(intent);
+				break;
+			case R.id.action_help:
+				HelpDialogFragment helpDialogFragment = new HelpDialogFragment();
+				helpDialogFragment.show(getSupportFragmentManager(), "help");
 				break;
 			case R.id.action_exit_app:
 				finish();
@@ -195,7 +200,7 @@ public class MainActivity extends BaseActivity implements
 	@Override
 	public void onSelected(String path) {
 		JarConverter converter = new JarConverter(this);
-		converter.execute(path, pathConverted);
+		converter.execute(path, ConfigActivity.APP_DIR);
 	}
 
 	public void updateApps() {
@@ -203,10 +208,10 @@ public class MainActivity extends BaseActivity implements
 		AppItem item;
 		String author = getString(R.string.author);
 		String version = getString(R.string.version);
-		String[] appFolders = new File(pathConverted).list();
+		String[] appFolders = new File(ConfigActivity.APP_DIR).list();
 		if (!(appFolders == null)) {
 			for (String appFolder : appFolders) {
-				File temp = new File(pathConverted + appFolder);
+				File temp = new File(ConfigActivity.APP_DIR, appFolder);
 				if (temp.list().length > 0) {
 					LinkedHashMap<String, String> params = FileUtils
 							.loadManifest(new File(temp.getAbsolutePath(), ConfigActivity.MIDLET_CONF_FILE));
@@ -214,13 +219,14 @@ public class MainActivity extends BaseActivity implements
 							params.get("MIDlet-Name"),
 							author + params.get("MIDlet-Vendor"),
 							version + params.get("MIDlet-Version"));
-					item.setPath(pathConverted + appFolder);
+					item.setPath(ConfigActivity.APP_DIR + appFolder);
 					apps.add(item);
 				} else {
 					temp.delete();
 				}
 			}
 		}
+		Collections.sort(apps, comparator);
 		AppsListAdapter adapter = new AppsListAdapter(this, apps);
 		appsListFragment.setListAdapter(adapter);
 	}

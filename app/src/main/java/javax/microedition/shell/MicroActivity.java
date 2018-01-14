@@ -1,120 +1,237 @@
 /*
- * J2ME Loader
- * Copyright (C) 2017 Nikita Shakarun
+ * Copyright 2015-2016 Nickolay Savchenko
+ * Copyright 2017-2018 Nikita Shakarun
  *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package javax.microedition.shell;
 
-import android.app.AlertDialog;
 import android.content.DialogInterface;
-import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.res.TypedArray;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.support.v7.app.ActionBar;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.Window;
+import android.view.WindowManager;
+import android.widget.LinearLayout;
+import android.widget.Toast;
 
+import java.io.File;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+
+import javax.microedition.lcdui.Canvas;
 import javax.microedition.lcdui.Command;
+import javax.microedition.lcdui.CommandListener;
 import javax.microedition.lcdui.Display;
 import javax.microedition.lcdui.Displayable;
 import javax.microedition.lcdui.Form;
+import javax.microedition.lcdui.event.CommandActionEvent;
 import javax.microedition.lcdui.event.SimpleEvent;
+import javax.microedition.lcdui.pointer.VirtualKeyboard;
+import javax.microedition.m3g.Graphics3D;
 import javax.microedition.midlet.MIDlet;
 import javax.microedition.util.ContextHolder;
 
 import ua.naiksoftware.j2meloader.R;
-import ua.naiksoftware.j2meloader.BaseActivity;
-/*
-模拟器activity
+import ua.naiksoftware.util.FileUtils;
+import ua.naiksoftware.util.Log;
 
-*/
-public class MicroActivity extends BaseActivity {
-	public final static String INTENT_PARAM_IS_CANVAS = "isCanvas";
+public class MicroActivity extends AppCompatActivity {
 	private Displayable current;
 	private boolean visible;
-	private boolean isCanvas;
+	private boolean loaded;
+	private boolean started;
+	private LinearLayout layout;
+	private Toolbar toolbar;
+	private String pathToMidletDir;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		ContextHolder.addActivityToPool(this);
-		isCanvas = getIntent().getBooleanExtra(INTENT_PARAM_IS_CANVAS, false);
-		SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(this);
-		boolean isActionBarEnabled = sp.getBoolean("pref_actionbar_switch", false);
-		if (isCanvas) {
-			setTheme(R.style.AppTheme_Fullscreen);
-			getSupportActionBar().setTitle(MyClassLoader.getName());
-			if (!isActionBarEnabled) {
-				getSupportActionBar().hide();
-			}
-		} else {
-			setTheme(R.style.AppTheme);
-		}
+		setContentView(R.layout.activity_micro);
+		ContextHolder.setCurrentActivity(this);
+		layout = findViewById(R.id.displayable_container);
+		toolbar = findViewById(R.id.toolbar);
+		setSupportActionBar(toolbar);
+		pathToMidletDir = getIntent().getStringExtra(ConfigActivity.MIDLET_PATH_KEY);
+		initEmulator();
+		loadMIDlet();
 	}
 
 	@Override
 	public void onResume() {
 		super.onResume();
-		ContextHolder.setCurrentActivity(this);
 		visible = true;
-		Display.getDisplay(null).changeActivity(this);
+		if (loaded) {
+			if (started) {
+				Display.getDisplay(null).activityResumed();
+			} else {
+				started = true;
+			}
+		}
 	}
 
 	@Override
 	public void onPause() {
 		super.onPause();
-		ContextHolder.setCurrentActivity(null);
 		visible = false;
 	}
 
 	@Override
 	protected void onStop() {
 		super.onStop();
-		Display.getDisplay(null).activityStopped(this);
-	}
-
-	@Override
-	public void onDestroy() {
-		if (current != null) {
-			current.setParentActivity(null);
+		if (loaded) {
+			Display.getDisplay(null).activityStopped();
 		}
-		ContextHolder.compactActivityPool(this);
-		super.onDestroy();
 	}
 
-	public boolean isCanvas() {
-		return isCanvas;
+	private void loadMIDlet() {
+		ArrayList<String> midlets = new ArrayList<>();
+		LinkedHashMap<String, String> params = FileUtils.loadManifest(new File(pathToMidletDir + ConfigActivity.MIDLET_CONF_FILE));
+		MIDlet.initProps(params);
+		for (LinkedHashMap.Entry<String, String> entry : params.entrySet()) {
+			if (entry.getKey().matches("MIDlet-[0-9]+")) {
+				midlets.add(entry.getValue());
+			}
+		}
+		int size = midlets.size();
+		String[] midletsNameArray = new String[size];
+		String[] midletsClassArray = new String[size];
+		for (int i = 0; i < size; i++) {
+			String tmp = midlets.get(i);
+			midletsClassArray[i] = tmp.substring(tmp.lastIndexOf(',') + 1).trim();
+			midletsNameArray[i] = tmp.substring(0, tmp.indexOf(',')).trim();
+		}
+		if (size == 0) {
+			Toast.makeText(this, R.string.error, Toast.LENGTH_SHORT).show();
+			finish();
+		} else if (size == 1) {
+			startMidlet(midletsClassArray[0]);
+		} else if (size > 1) {
+			showMidletDialog(midletsNameArray, midletsClassArray);
+		}
 	}
 
-	//XL 创建绘图层
+	private void showMidletDialog(String[] midletsNameArray, final String[] midletsClassArray) {
+		AlertDialog.Builder builder = new AlertDialog.Builder(this)
+				.setTitle(R.string.select_dialog_title)
+				.setItems(midletsNameArray, new DialogInterface.OnClickListener() {
+					@Override
+					public void onClick(DialogInterface d, int n) {
+						startMidlet(midletsClassArray[n]);
+					}
+				})
+				.setOnCancelListener(new DialogInterface.OnCancelListener() {
+					@Override
+					public void onCancel(DialogInterface dialogInterface) {
+						finish();
+					}
+				});
+		builder.show();
+	}
+
+	private void startMidlet(String mainClass) {
+		File dexSource = new File(pathToMidletDir, ConfigActivity.MIDLET_DEX_FILE);
+		File dexTargetDir = new File(getApplicationInfo().dataDir, ConfigActivity.TEMP_DEX_DIR);
+		if (!dexTargetDir.exists()) {
+			dexTargetDir.mkdirs();
+		}
+		File dexTarget = new File(dexTargetDir, ConfigActivity.MIDLET_DEX_FILE);
+		try {
+			FileUtils.copyFileUsingChannel(dexSource, dexTarget);
+			ClassLoader loader = new MyClassLoader(dexTarget.getAbsolutePath(),
+					getApplicationInfo().dataDir, null, getClassLoader(), pathToMidletDir + ConfigActivity.MIDLET_RES_DIR);
+			Log.d("inf", "load main: " + mainClass + " from dex:" + dexTarget.getPath());
+			MIDlet midlet = (MIDlet) loader.loadClass(mainClass).newInstance();
+			midlet.startApp();
+			loaded = true;
+		} catch (Throwable t) {
+			Log.d("err", t.toString() + "/n" + t.getMessage());
+			showErrorDialog(t.getMessage());
+		}
+	}
+
+	private void initEmulator() {
+		Display.initDisplay();
+		Graphics3D.initGraphics3D();
+		File cacheDir = ContextHolder.getCacheDir();
+		if (cacheDir != null) {
+			FileUtils.deleteDirectory(cacheDir);
+		}
+	}
+
+	private void showErrorDialog(String message) {
+		AlertDialog.Builder builder = new AlertDialog.Builder(this)
+				.setIcon(android.R.drawable.ic_dialog_alert)
+				.setTitle(R.string.error)
+				.setMessage(message);
+		builder.setOnCancelListener(new DialogInterface.OnCancelListener() {
+			@Override
+			public void onCancel(DialogInterface dialogInterface) {
+				finish();
+			}
+		});
+		builder.show();
+	}
+
 	private SimpleEvent msgSetCurent = new SimpleEvent() {
 		public void process() {
 			current.setParentActivity(MicroActivity.this);
-			setTitle(current.getTitle());
-			setContentView(current.getDisplayableView());
+			layout.removeAllViews();
+			layout.addView(current.getDisplayableView());
+			invalidateOptionsMenu();
+			SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+			boolean actionBarEnabled = sp.getBoolean("pref_actionbar_switch", false);
+			Window window = getWindow();
+			ActionBar actionBar = getSupportActionBar();
+			LinearLayout.LayoutParams layoutParams = (LinearLayout.LayoutParams) toolbar.getLayoutParams();
+			if (current instanceof Canvas) {
+				window.addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
+				if (!actionBarEnabled) {
+					actionBar.hide();
+				} else {
+					actionBar.setTitle(MyClassLoader.getName());
+					layoutParams.height = (int) (getToolBarHeight() / 1.5);
+				}
+			} else {
+				window.clearFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
+				actionBar.show();
+				actionBar.setTitle(current.getTitle());
+				layoutParams.height = getToolBarHeight();
+			}
+			toolbar.setLayoutParams(layoutParams);
 		}
 	};
 
+	private int getToolBarHeight() {
+		int[] attrs = new int[]{R.attr.actionBarSize};
+		TypedArray ta = obtainStyledAttributes(attrs);
+		int toolBarHeight = ta.getDimensionPixelSize(0, -1);
+		ta.recycle();
+		return toolBarHeight;
+	}
+
 	public void setCurrent(Displayable disp) {
-		if (current != null) {
-			current.setParentActivity(null);
-		}
 		current = disp;
 		runOnUiThread(msgSetCurent);
 	}
@@ -127,7 +244,7 @@ public class MicroActivity extends BaseActivity {
 		return visible;
 	}
 
-	public void showExitConfirmation() {
+	private void showExitConfirmation() {
 		AlertDialog.Builder alertBuilder = new AlertDialog.Builder(this);
 		alertBuilder.setTitle(R.string.CONFIRMATION_REQUIRED)
 				.setMessage(R.string.FORCE_CLOSE_CONFIRMATION)
@@ -137,7 +254,7 @@ public class MicroActivity extends BaseActivity {
 						Runnable r = new Runnable() {
 							public void run() {
 								try {
-									MIDlet.callDestroyApp(true);
+									Display.getDisplay(null).activityDestroyed();
 								} catch (Throwable ex) {
 									ex.printStackTrace();
 								}
@@ -149,12 +266,6 @@ public class MicroActivity extends BaseActivity {
 				})
 				.setNegativeButton(android.R.string.no, null);
 		alertBuilder.create().show();
-	}
-
-	public void startActivity(Class cls, boolean isCanvas) {
-		Intent intent = new Intent(this, cls);
-		intent.putExtra(INTENT_PARAM_IS_CANVAS, isCanvas);
-		startActivity(intent);
 	}
 
 	@Override
@@ -183,10 +294,61 @@ public class MicroActivity extends BaseActivity {
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 		if (current != null) {
-			current.menuItemSelected(item);
+			int id = item.getItemId();
+			if (item.getGroupId() == R.id.action_group_common_settings) {
+				if (id == R.id.action_exit_midlet) {
+					showExitConfirmation();
+				} else if (current instanceof Canvas && ContextHolder.getVk() != null) {
+					VirtualKeyboard vk = ContextHolder.getVk();
+					switch (id) {
+						case R.id.action_layout_edit_mode:
+							vk.switchLayoutEditMode(VirtualKeyboard.LAYOUT_KEYS);
+							break;
+						case R.id.action_layout_scale_mode:
+							vk.switchLayoutEditMode(VirtualKeyboard.LAYOUT_SCALES);
+							break;
+						case R.id.action_layout_edit_finish:
+							vk.switchLayoutEditMode(VirtualKeyboard.LAYOUT_EOF);
+							break;
+						case R.id.action_layout_switch:
+							vk.switchLayout();
+							break;
+						case R.id.action_hide_buttons:
+							showHideButtonDialog();
+							break;
+					}
+				}
+				return true;
+			}
+
+			CommandListener listener = current.getCommandListener();
+			if (listener == null) {
+				return false;
+			}
+
+			for (Command cmd : current.getCommands()) {
+				if (cmd.hashCode() == id) {
+					current.getEventQueue().postEvent(CommandActionEvent.getInstance(listener, cmd, current));
+					return true;
+				}
+			}
 		}
 
 		return super.onOptionsItemSelected(item);
+	}
+
+	private void showHideButtonDialog() {
+		final VirtualKeyboard vk = ContextHolder.getVk();
+		AlertDialog.Builder builder = new AlertDialog.Builder(this)
+				.setTitle(R.string.hide_buttons)
+				.setMultiChoiceItems(vk.getKeyNames(), vk.getKeyVisibility(), new DialogInterface.OnMultiChoiceClickListener() {
+					@Override
+					public void onClick(DialogInterface dialogInterface, int i, boolean b) {
+						vk.setKeyVisibility(i, b);
+					}
+				})
+				.setPositiveButton(android.R.string.ok, null);
+		builder.show();
 	}
 
 	@Override

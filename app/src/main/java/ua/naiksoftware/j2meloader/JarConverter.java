@@ -1,20 +1,18 @@
 /*
- * J2ME Loader
- * Copyright (C) 2015-2016 Nickolay Savchenko
- * Copyright (C) 2017 Nikita Shakarun
+ * Copyright 2015-2016 Nickolay Savchenko
+ * Copyright 2017-2018 Nikita Shakarun
  *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package ua.naiksoftware.j2meloader;
@@ -41,7 +39,12 @@ import ua.naiksoftware.util.ZipUtils;
 
 public class JarConverter extends AsyncTask<String, String, Boolean> {
 
-	private static final String tag = "JarConverter";
+	public static final String TEMP_JAR_NAME = "tmp.jar";
+	public static final String TEMP_URI_FOLDER_NAME = "tmp_uri";
+
+	private static final String TEMP_FIX_FOLDER_NAME = "tmp_fix";
+	private static final String TEMP_FOLDER_NAME = "tmp";
+	private static final String TAG = "JarConverter";
 
 	private final Context context;
 	private String err = "Void error";
@@ -53,8 +56,8 @@ public class JarConverter extends AsyncTask<String, String, Boolean> {
 
 	public JarConverter(MainActivity context) {
 		this.context = context;
-		dirTmp = context.getDir("tmp",0);
-		dirTmp.mkdirs();
+		dirTmp = new File(context.getApplicationInfo().dataDir, TEMP_FOLDER_NAME);
+		dirTmp.mkdir();
 	}
 
 	@Override
@@ -62,20 +65,21 @@ public class JarConverter extends AsyncTask<String, String, Boolean> {
 		String pathToJar = p1[0];
 		targetJarName = pathToJar.substring(pathToJar.lastIndexOf('/') + 1);
 		String pathConverted = p1[1];
-		Log.e(tag, "doInBackground$ pathToJar=" + pathToJar + " pathConverted="
+		Log.d(TAG, "doInBackground$ pathToJar=" + pathToJar + " pathConverted="
 				+ pathConverted);
 		File inputJar = new File(pathToJar);
 		File fixedJar;
 		try {
-			Log.e(tag,"开始fix");
 			fixedJar = fixJar(inputJar);
 		} catch (IOException e) {
 			e.printStackTrace();
-			err = "Can't convert\n";
+			err = "Can't convert";
 			deleteTemp();
 			return false;
 		}
-		if (!ZipUtils.unzip(fixedJar, dirTmp)) {
+		try {
+			ZipUtils.unzip(fixedJar, dirTmp);
+		} catch (IOException e) {
 			err = "Brocken jar";
 			deleteTemp();
 			return false;
@@ -91,7 +95,7 @@ public class JarConverter extends AsyncTask<String, String, Boolean> {
 		File appConverted = new File(pathConverted, appDir);
 		FileUtils.deleteDirectory(appConverted);
 		appConverted.mkdirs();
-		Log.e(tag, "appConverted=" + appConverted.getPath());
+		Log.d(TAG, "appConverted=" + appConverted.getPath());
 		Main.main(new String[]{
 				"--dex", "--no-optimize", "--output=" + appConverted.getPath()
 				+ ConfigActivity.MIDLET_DEX_FILE, fixedJar.getAbsolutePath()});
@@ -105,11 +109,7 @@ public class JarConverter extends AsyncTask<String, String, Boolean> {
 		FileUtils.moveFiles(dirTmp.getPath(), pathConverted + appDir
 				+ ConfigActivity.MIDLET_RES_DIR, new FilenameFilter() {
 			public boolean accept(File dir, String fname) {
-				if (fname.endsWith(".class") || fname.endsWith(".jar.jar")) {
-					return false;
-				} else {
-					return true;
-				}
+				return !(fname.endsWith(".class") || fname.endsWith(".jar.jar"));
 			}
 		});
 		deleteTemp();
@@ -141,14 +141,11 @@ public class JarConverter extends AsyncTask<String, String, Boolean> {
 	}
 
 	private File fixJar(File inputJar) throws IOException {
-		Log.e(tag,"fixJar...");
 		File fixedJar = new File(dirTmp, inputJar.getName() + ".jar");
 		try {
-			Log.e(tag,"processJar..."+inputJar.getPath()+" "+fixedJar.getPath());
 			AndroidProducer.processJar(inputJar, fixedJar, true);
 		} catch (ZipException e) {
-			Log.e(tag,"processJar出错...");
-			File unpackedJarFolder = new File(context.getApplicationInfo().dataDir, "tmp_fix");
+			File unpackedJarFolder = new File(context.getApplicationInfo().dataDir, TEMP_FIX_FOLDER_NAME);
 			ZipUtils.unzip(inputJar, unpackedJarFolder);
 
 			File repackedJar = new File(dirTmp, inputJar.getName());
@@ -164,7 +161,7 @@ public class JarConverter extends AsyncTask<String, String, Boolean> {
 	private void deleteTemp() {
 		// Delete temp files
 		FileUtils.deleteDirectory(dirTmp);
-		File uriDir = new File(context.getApplicationInfo().dataDir, "uri_tmp");
+		File uriDir = new File(context.getApplicationInfo().dataDir, TEMP_URI_FOLDER_NAME);
 		if (uriDir.exists()) {
 			FileUtils.deleteDirectory(uriDir);
 		}

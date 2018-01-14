@@ -1,5 +1,6 @@
 /*
  * Copyright 2012 Kulikov Dmitriy
+ * Copyright 2017 Nikita Shakarun
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,7 +26,7 @@ import java.io.IOException;
 import java.io.InputStream;
 
 import javax.microedition.lcdui.game.Sprite;
-import javax.microedition.shell.ConfigActivity;
+import javax.microedition.shell.MyClassLoader;
 import javax.microedition.util.ContextHolder;
 
 public class Image {
@@ -65,7 +66,7 @@ public class Image {
 			resname = resname.substring(1);
 		}
 
-		InputStream is = new FileInputStream(ConfigActivity.pathToMidletDir + ConfigActivity.MIDLET_RES_DIR + resname);
+		InputStream is = new FileInputStream(MyClassLoader.getResFolder() + "/" + resname);
 		Bitmap bitmap = BitmapFactory.decodeStream(is);
 		is.close();
 

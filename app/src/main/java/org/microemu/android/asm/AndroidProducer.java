@@ -45,10 +45,9 @@ import java.util.jar.JarEntry;
 import java.util.jar.JarInputStream;
 import java.util.jar.JarOutputStream;
 import java.util.jar.Manifest;
-import ua.naiksoftware.util.Log;
 
 public class AndroidProducer {
-private static String TAG="AndroidProducer";
+
 	private static HashMap<String, ArrayList<String>> classesHierarchy =
 			new HashMap<String, ArrayList<String>>();
 
@@ -76,41 +75,27 @@ private static String TAG="AndroidProducer";
 	public static void processJar(File jarInputFile, File jarOutputFile, boolean isMidlet) throws IOException {
 		JarInputStream jis = null;
 		JarOutputStream jos = null;
-		
 		HashMap<String, byte[]> resources = new HashMap<String, byte[]>();
-		//尝试创建文件
-		if(!jarOutputFile.isFile())
-		{
-		if(!jarOutputFile.createNewFile())
-		{
-			Log.e(TAG,"创建文件"+jarOutputFile.getPath()+"失败");
-		}
-		}
 		try {
 			jis = new JarInputStream(new FileInputStream(jarInputFile));
-			Log.e(TAG,"getManifest...");
 			Manifest manifest = jis.getManifest();
-			Log.e(TAG,"获取信息成功");
 			if (manifest == null) {
-				Log.e(TAG,"mainfest=null");
 				jos = new JarOutputStream(new FileOutputStream(jarOutputFile));
 			} else {
-				Log.e(TAG,"mainfest!=null");
 				jos = new JarOutputStream(new FileOutputStream(jarOutputFile), manifest);
 			}
-      //卡住
+
 			byte[] buffer = new byte[1024];
 			JarEntry jarEntry;
 			while ((jarEntry = jis.getNextJarEntry()) != null) {
 				if (!jarEntry.isDirectory()) {
 					String name = jarEntry.getName();
-					Log.e(TAG,name);
 					int size = 0;
 					int read;
 					int length = buffer.length;
 					while ((read = jis.read(buffer, size, length)) > 0) {
 						size += read;
-            Log.e(TAG,"read "+size);
+
 						length = 1024;
 						if (size + length > buffer.length) {
 							byte[] newInputBuffer = new byte[size + length];
@@ -119,17 +104,14 @@ private static String TAG="AndroidProducer";
 						}
 					}
 					byte[] inBuffer = new byte[size];
-					Log.e(TAG,"复制数据");
 					System.arraycopy(buffer, 0, inBuffer, 0, size);
-					Log.e(TAG,"put..");
 					resources.put(name, inBuffer);
-					Log.e(TAG,"analyze class...");
 					if (name.endsWith(".class")) {
 						analyze(name.substring(0, name.length() - ".class".length()), new ByteArrayInputStream(inBuffer));
 					}
 				}
 			}
-      Log.e(TAG,"合并class");
+
 			Iterator<String> it = resources.keySet().iterator();
 			while (it.hasNext()) {
 				String name = it.next();
@@ -141,19 +123,11 @@ private static String TAG="AndroidProducer";
 				jos.putNextEntry(new JarEntry(name));
 				jos.write(outBuffer);
 			}
-		} 
-		catch(Exception e)
-		{
-			Log.e(TAG,"转换出错："+e.getMessage());
-		}
-		finally
-		{
-			if (jis != null)
-			{
+		} finally {
+			if (jis != null) {
 				jis.close();
 			}
-			if (jos != null)
-			{
+			if (jos != null) {
 				jos.close();
 			}
 		}

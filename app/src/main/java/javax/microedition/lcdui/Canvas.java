@@ -1,6 +1,6 @@
 /*
 * Copyright 2012 Kulikov Dmitriy
-* Copyright 2017 Nikita Shakarun
+* Copyright 2017-2018 Nikita Shakarun
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -160,6 +160,7 @@ public abstract class Canvas extends Displayable {
 		public InnerView(Context context) {
 			super(context);
 			getHolder().addCallback(this);
+			getHolder().setFormat(android.graphics.PixelFormat.RGBA_8888);
 			setFocusableInTouchMode(true);
 		}
 
@@ -242,7 +243,6 @@ public abstract class Canvas extends Displayable {
 		@Override
 		public void surfaceCreated(SurfaceHolder holder) {
 			synchronized (paintsync) {
-				surfacevalid = true;
 				postEvent(CanvasEvent.getInstance(Canvas.this, CanvasEvent.SHOW_NOTIFY));
 			}
 		}
@@ -250,7 +250,6 @@ public abstract class Canvas extends Displayable {
 		@Override
 		public void surfaceDestroyed(SurfaceHolder holder) {
 			synchronized (paintsync) {
-				surfacevalid = false;
 				postEvent(CanvasEvent.getInstance(Canvas.this, CanvasEvent.HIDE_NOTIFY));
 			}
 		}
@@ -259,7 +258,7 @@ public abstract class Canvas extends Displayable {
 	private class PaintEvent extends Event implements EventFilter {
 		public void process() {
 			synchronized (paintsync) {
-				if (!surfacevalid || holder == null) {
+				if (holder == null || !holder.getSurface().isValid()) {
 					return;
 				}
 				graphics.setCanvas(offscreen.getCanvas());
@@ -318,8 +317,6 @@ public abstract class Canvas extends Displayable {
 	private final Object paintsync = new Object();
 
 	private PaintEvent paintEvent = new PaintEvent();
-
-	private boolean surfacevalid = false;
 
 	private InnerView view;
 	private SurfaceHolder holder;
