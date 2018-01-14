@@ -70,8 +70,8 @@ public class MicroActivity extends AppCompatActivity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_micro);
 		ContextHolder.setCurrentActivity(this);
-		layout = findViewById(R.id.displayable_container);
-		toolbar = findViewById(R.id.toolbar);
+		layout = (LinearLayout) findViewById(R.id.displayable_container);
+		toolbar = (Toolbar) findViewById(R.id.toolbar);
 		setSupportActionBar(toolbar);
 		pathToMidletDir = getIntent().getStringExtra(ConfigActivity.MIDLET_PATH_KEY);
 		initEmulator();

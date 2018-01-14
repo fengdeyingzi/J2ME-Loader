@@ -47,6 +47,7 @@ import java.util.LinkedHashMap;
 import javax.microedition.shell.ConfigActivity;
 
 import ua.naiksoftware.util.FileUtils;
+import ua.naiksoftware.util.Log;
 
 public class MainActivity extends AppCompatActivity implements NavigationDrawerFragment.SelectedCallback {
 
@@ -71,6 +72,7 @@ public class MainActivity extends AppCompatActivity implements NavigationDrawerF
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		Log.clear();
 		Uri uri = getIntent().getData();
 		if (!isTaskRoot() && uri == null) {
 			finish();

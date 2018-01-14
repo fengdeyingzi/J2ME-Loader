@@ -12,7 +12,7 @@ android {
         versionName "1.2.6.2"
         setProperty("archivesBaseName", "J2ME_Loader-$versionName")
         ndk {
-            abiFilters 'x86', 'armeabi-v7a'
+            abiFilters 'x86', 'armeabi'
         }
     }
     buildTypes {
@@ -34,9 +34,10 @@ android {
 }
 
 dependencies {
-    implementation 'com.android.support:appcompat-v7:27.0.2'
-    implementation 'com.android.support:preference-v7:27.0.2'
-    implementation 'com.github.yukuku:ambilwarna:2.0.1'
-    implementation 'org.ow2.asm:asm-tree:5.2'
-    implementation fileTree(include: ['*.jar', '*.so'], dir: 'libs')
+    compile 'com.android.support:appcompat-v7:23.0.1'
+    compile 'com.android.support:preference-v7:23.0.1'
+    //implementation 'com.github.yukuku:ambilwarna:2.0.1'
+   。// implementation 'org.ow2.asm:asm-tree:5.2'
+	 compile project(':library')
+    compile fileTree(include: ['*.jar', '*.so'], dir: 'libs')
 }

@@ -24,6 +24,7 @@ import android.support.v7.app.AlertDialog;
 import android.text.Html;
 import android.text.method.LinkMovementMethod;
 import android.widget.TextView;
+import com.xl.game.tool.AppTool;
 
 public class AboutDialogFragment extends DialogFragment {
 	@NonNull
@@ -31,7 +32,7 @@ public class AboutDialogFragment extends DialogFragment {
 	public Dialog onCreateDialog(Bundle savedInstanceState) {
 		StringBuilder message = new StringBuilder().append(getText(R.string.about_message))
 				.append(getText(R.string.version))
-				.append(BuildConfig.VERSION_NAME)
+				.append(AppTool.getVersionName(getContext()))
 				.append(getText(R.string.about_email))
 				.append(getText(R.string.about_github))
 				.append(getText(R.string.about_4pda))
@@ -48,4 +49,6 @@ public class AboutDialogFragment extends DialogFragment {
 				.setView(tv);
 		return builder.create();
 	}
+	
+	
 }

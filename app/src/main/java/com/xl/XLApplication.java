@@ -6,6 +6,7 @@ import java.io.*;
 import android.app.*;
 import android.content.*;
 import ua.naiksoftware.util.Log;
+
 //import android.support.multidex.*;
 public class XLApplication extends Application
 {

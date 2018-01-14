@@ -17,9 +17,11 @@
 
 package ua.naiksoftware.j2meloader;
 
+/*
 import android.support.v4.content.pm.ShortcutInfoCompat;
 import android.support.v4.content.pm.ShortcutManagerCompat;
 import android.support.v4.graphics.drawable.IconCompat;
+*/
 import android.support.v7.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -101,6 +103,7 @@ public class AppsListFragment extends ListFragment {
 		AppItem appItem = apps.get(index);
 		switch (item.getItemId()) {
 			case R.id.action_context_shortcut:
+				/*
 				Bitmap bitmap = BitmapFactory.decodeFile(appItem.getImagePath());
 				Intent launchIntent = new Intent(Intent.ACTION_DEFAULT, Uri.parse(appItem.getPath()), getActivity(), ConfigActivity.class);
 				launchIntent.putExtra(ConfigActivity.MIDLET_NAME_KEY, appItem.getTitle());
@@ -113,6 +116,7 @@ public class AppsListFragment extends ListFragment {
 					shortcutInfoCompatBuilder.setIcon(IconCompat.createWithResource(getActivity(), R.mipmap.ic_launcher));
 				}
 				ShortcutManagerCompat.requestPinShortcut(getActivity(), shortcutInfoCompatBuilder.build(), null);
+				*/
 				break;
 			case R.id.action_context_settings:
 				Intent i = new Intent(Intent.ACTION_DEFAULT, Uri.parse(appItem.getPath()), getActivity(), ConfigActivity.class);

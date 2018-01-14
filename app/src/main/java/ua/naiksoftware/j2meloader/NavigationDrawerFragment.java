@@ -123,8 +123,8 @@ public class NavigationDrawerFragment extends Fragment {
 							 Bundle savedInstanceState) {
 		View v = inflater.inflate(R.layout.file_browser_layout, container,
 				false);
-		fullPath = v.findViewById(R.id.full_path);
-		mDrawerListView = v.findViewById(R.id.file_list);
+		fullPath = (TextView) v.findViewById(R.id.full_path);
+		mDrawerListView = (ListView) v.findViewById(R.id.file_list);
 		mDrawerListView
 				.setOnItemClickListener(new AdapterView.OnItemClickListener() {
 					@Override
@@ -245,7 +245,7 @@ public class NavigationDrawerFragment extends Fragment {
 			}
 		});
 
-		mDrawerLayout.addDrawerListener(mDrawerToggle);
+		mDrawerLayout.setDrawerListener(mDrawerToggle);
 	}
 
 	@Override
