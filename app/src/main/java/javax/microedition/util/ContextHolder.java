@@ -35,6 +35,8 @@ import javax.microedition.shell.ConfigActivity;
 import javax.microedition.shell.MyClassLoader;
 
 import ua.naiksoftware.util.Log;
+import com.xl.BaseConfig;
+import java.io.IOException;
 
 public class ContextHolder {
 	private static final String tag = "ContextHolder";
@@ -85,12 +87,29 @@ public class ContextHolder {
 
 	public static InputStream getResourceAsStream(Class className, String resName) {
 		Log.d(tag, "CUSTOM GET RES CALLED WITH PATH: " + resName);
+		if(BaseConfig.isApp)
+		{
+			
+			try
+			{
+				return new MIDletResourceInputStream(BaseConfig.activity.getAssets().open(resName));
+			}
+			catch(IOException e)
+			{
+				e.printStackTrace();
+				return null;
+			}
+		}
+		else
+		{
 		try {
 			return new MIDletResourceInputStream(new File(MyClassLoader.getResFolder(), resName));
 		} catch (FileNotFoundException e) {
 			Log.d(tag, "Can't load res " + resName + " on path: " + MyClassLoader.getResFolder().getPath() + resName);
 			return null;
 		}
+		}
+		
 	}
 
 	public static FileOutputStream openFileOutput(String name) throws FileNotFoundException {
@@ -106,7 +125,7 @@ public class ContextHolder {
 	}
 
 	public static File getFileByName(String name) {
-		File dir = new File(ConfigActivity.DATA_DIR, MyClassLoader.getName());
+		File dir = new File(ConfigActivity.DATA_DIR, BaseConfig.appName);
 		if (!dir.exists()) {
 			dir.mkdirs();
 		}

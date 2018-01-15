@@ -56,7 +56,7 @@ import javax.microedition.util.param.DataContainer;
 import javax.microedition.util.param.SharedPreferencesContainer;
 
 import ua.naiksoftware.j2meloader.R;
-import yuku.ambilwarna.AmbilWarnaDialog;
+
 
 public class ConfigActivity extends AppCompatActivity implements View.OnClickListener {
 
@@ -332,7 +332,7 @@ public class ConfigActivity extends AppCompatActivity implements View.OnClickLis
 				320)));
 		tfScreenBack
 				.setText(Integer.toHexString(
-						params.getInt("ScreenBackgroundColor", 0xD0D0D0))
+						params.getInt("ScreenBackgroundColor", 0xc0c0c0))
 						.toUpperCase());
 		sbScaleRatio.setProgress(params.getInt("ScreenScaleRatio", 100));
 		tfScaleRatioValue.setText(String.valueOf(sbScaleRatio.getProgress()));
@@ -558,7 +558,7 @@ public class ConfigActivity extends AppCompatActivity implements View.OnClickLis
 	}
 
 	@Override
-	public void onClick(View v) {
+	public void onClick(View v) {/*
 		String[] presets = null;
 		DialogInterface.OnClickListener presetListener = null;
 
@@ -691,5 +691,6 @@ public class ConfigActivity extends AppCompatActivity implements View.OnClickLis
 					color | 0xFF000000, colorListener);
 			dialog.show();
 		}
+		*/
 	}
 }

@@ -57,12 +57,12 @@ import ua.naiksoftware.util.FileUtils;
 import ua.naiksoftware.util.Log;
 
 public class MicroActivity extends AppCompatActivity {
-	private Displayable current;
-	private boolean visible;
-	private boolean loaded;
+	public Displayable current;
+	public boolean visible;
+	public boolean loaded;
 	private boolean started;
 	private LinearLayout layout;
-	private Toolbar toolbar;
+	public Toolbar toolbar;
 	private String pathToMidletDir;
 
 	@Override
@@ -105,7 +105,7 @@ public class MicroActivity extends AppCompatActivity {
 		}
 	}
 
-	private void loadMIDlet() {
+	public void loadMIDlet() {
 		ArrayList<String> midlets = new ArrayList<>();
 		LinkedHashMap<String, String> params = FileUtils.loadManifest(new File(pathToMidletDir + ConfigActivity.MIDLET_CONF_FILE));
 		MIDlet.initProps(params);
@@ -150,7 +150,7 @@ public class MicroActivity extends AppCompatActivity {
 		builder.show();
 	}
 
-	private void startMidlet(String mainClass) {
+	public void startMidlet(String mainClass) {
 		File dexSource = new File(pathToMidletDir, ConfigActivity.MIDLET_DEX_FILE);
 		File dexTargetDir = new File(getApplicationInfo().dataDir, ConfigActivity.TEMP_DEX_DIR);
 		if (!dexTargetDir.exists()) {
@@ -206,7 +206,7 @@ public class MicroActivity extends AppCompatActivity {
 			ActionBar actionBar = getSupportActionBar();
 			LinearLayout.LayoutParams layoutParams = (LinearLayout.LayoutParams) toolbar.getLayoutParams();
 			if (current instanceof Canvas) {
-				window.addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
+				//window.addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
 				if (!actionBarEnabled) {
 					actionBar.hide();
 				} else {
@@ -214,7 +214,7 @@ public class MicroActivity extends AppCompatActivity {
 					layoutParams.height = (int) (getToolBarHeight() / 1.5);
 				}
 			} else {
-				window.clearFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
+				//window.clearFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
 				actionBar.show();
 				actionBar.setTitle(current.getTitle());
 				layoutParams.height = getToolBarHeight();
@@ -268,14 +268,7 @@ public class MicroActivity extends AppCompatActivity {
 		alertBuilder.create().show();
 	}
 
-	@Override
-	public boolean onKeyDown(int keyCode, KeyEvent event) {
-		switch (keyCode) {
-			case KeyEvent.KEYCODE_BACK:
-				return true;
-		}
-		return super.onKeyDown(keyCode, event);
-	}
+	
 
 	@Override
 	public boolean onPrepareOptionsMenu(Menu menu) {

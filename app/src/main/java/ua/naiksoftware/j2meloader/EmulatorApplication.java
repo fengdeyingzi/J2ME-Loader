@@ -19,14 +19,15 @@ package ua.naiksoftware.j2meloader;
 import android.app.Application;
 
 import com.devs.acr.AutoErrorReporter;
+import com.xl.XLApplication;
 
-public class EmulatorApplication extends Application {
+public class EmulatorApplication extends XLApplication {
 	@Override
 	public void onCreate() {
 		super.onCreate();
-		AutoErrorReporter.get(this)
+		/*AutoErrorReporter.get(this)
 				.setEmailAddresses("j2me.loader@mail.ru")
 				.setEmailSubject("Auto Crash Report")
-				.start();
+				.start();*/
 	}
 }

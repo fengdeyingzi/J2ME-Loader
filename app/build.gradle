@@ -5,9 +5,9 @@ android {
     buildToolsVersion '27.0.3'
 
     defaultConfig {
-        applicationId "ua.naiksoftware.j2meloader"
-        minSdkVersion 14
-        targetSdkVersion 27
+        applicationId "com.xl.game.baozi"
+        minSdkVersion 8
+        targetSdkVersion 21
         versionCode 18
         versionName "1.2.6.2"
         setProperty("archivesBaseName", "J2ME_Loader-$versionName")
@@ -38,6 +38,6 @@ dependencies {
     compile 'com.android.support:preference-v7:23.0.1'
     //implementation 'com.github.yukuku:ambilwarna:2.0.1'
    。// implementation 'org.ow2.asm:asm-tree:5.2'
-	 compile project(':library')
+
     compile fileTree(include: ['*.jar', '*.so'], dir: 'libs')
 }

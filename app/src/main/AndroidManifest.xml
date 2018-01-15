@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="ua.naiksoftware.j2meloader"
+    package="com.xl.game.baozi"
     android:installLocation="auto" >
     <uses-permission android:name="android.permission.VIBRATE" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
@@ -11,12 +11,13 @@
     <application
         android:allowBackup="false"
         android:largeHeap="true"
+				android:theme="@style/AppTheme"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:resizeableActivity="false"
-        android:name=".EmulatorApplication" >
+        android:name="ua.naiksoftware.j2meloader.EmulatorApplication" >
         <activity
-            android:name=".MainActivity"
+            android:name="javax.microedition.shell.AppMicroActivity"
             android:theme="@style/AppTheme"
             android:configChanges="orientation|screenSize"
             android:label="@string/app_name" >
@@ -24,29 +25,10 @@
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
-            <intent-filter>
-                <action android:name="android.intent.action.VIEW" />
-                <category android:name="android.intent.category.DEFAULT" />
-                <category android:name="android.intent.category.BROWSABLE" />
-                <data android:mimeType="application/java-archive" />
-                <data android:host="*" />
-                <data android:scheme="file" />
-                <data android:scheme="content" />
-            </intent-filter>
-            <intent-filter>
-                <action android:name="android.intent.action.VIEW" />
-                <category android:name="android.intent.category.DEFAULT" />
-                <category android:name="android.intent.category.BROWSABLE" />
-                <data android:mimeType="*/*" />
-                <data android:host="*"/>
-                <data android:scheme="file" />
-                <data android:scheme="content" />
-                <data android:pathPattern=".*\\.jar" />
-                <data android:pathPattern=".*\\..*\\.jar" />
-                <data android:pathPattern=".*\\..*\\..*\\.jar" />
-                <data android:pathPattern=".*\\..*\\..*\\..*\\.jar" />
-            </intent-filter>
+            
+      
         </activity>
+				
         <activity
             android:name="javax.microedition.shell.ConfigActivity"
             android:exported="true"
@@ -60,9 +42,7 @@
             android:name="com.devs.acr.ErrorReporterActivity"
             android:theme="@android:style/Theme.Translucent.NoTitleBar"
             android:configChanges="orientation|screenSize" />
-        <activity
-            android:name=".SettingsActivity"
-            android:theme="@style/AppTheme" />
+        
     </application>
 
 </manifest>

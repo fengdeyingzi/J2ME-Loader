@@ -28,6 +28,7 @@ import java.io.InputStream;
 import javax.microedition.lcdui.game.Sprite;
 import javax.microedition.shell.MyClassLoader;
 import javax.microedition.util.ContextHolder;
+import com.xl.BaseConfig;
 
 public class Image {
 	private Bitmap bitmap;
@@ -61,12 +62,20 @@ public class Image {
 		return new Image(BitmapFactory.decodeResource(ContextHolder.getContext().getResources(), id));
 	}
 
+	//read res 
 	public static Image createImage(String resname) throws IOException {
 		if (resname.startsWith("/")) {
 			resname = resname.substring(1);
 		}
-
-		InputStream is = new FileInputStream(MyClassLoader.getResFolder() + "/" + resname);
+		InputStream is=null;
+    if(BaseConfig.isApp)
+		{
+			is = BaseConfig.activity.getAssets().open(resname);
+		}
+		else
+		{
+		 is = new FileInputStream(MyClassLoader.getResFolder() + "/" + resname);
+		}
 		Bitmap bitmap = BitmapFactory.decodeStream(is);
 		is.close();
 

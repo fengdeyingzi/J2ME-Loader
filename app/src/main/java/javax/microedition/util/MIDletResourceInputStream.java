@@ -25,10 +25,15 @@ import java.io.IOException;
 import java.io.InputStream;
 
 public class MIDletResourceInputStream extends InputStream {
-	private FileInputStream fis;
+	private InputStream fis;
 
 	public MIDletResourceInputStream(@NonNull File file) throws FileNotFoundException {
 		fis = new FileInputStream(file);
+	}
+	
+	public MIDletResourceInputStream(@NonNull InputStream in)
+	{
+		fis = in;
 	}
 
 	@Override
