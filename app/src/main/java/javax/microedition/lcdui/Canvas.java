@@ -156,12 +156,18 @@ public abstract class Canvas extends Displayable {
 		return keyCodeToKeyName.get(keyCode);
 	}
 
-	private class InnerView extends SurfaceView implements SurfaceHolder.Callback {
+	/*
+	修改SurfaceView为普通View
+	
+	*/
+	private class InnerView extends View  {
 		public InnerView(Context context) {
 			super(context);
-			getHolder().addCallback(this);
-			getHolder().setFormat(android.graphics.PixelFormat.RGBA_8888);
+			holder = this;
+			//getHolder().addCallback(this);
+			//getHolder().setFormat(android.graphics.PixelFormat.RGBA_8888);
 			setFocusableInTouchMode(true);
+			
 		}
 
 		public boolean onKeyDown(int keyCode, KeyEvent event) {
@@ -231,6 +237,22 @@ public abstract class Canvas extends Displayable {
 		}
 
 		@Override
+		protected void onLayout(boolean changed, int left, int top, int right, int bottom)
+		{
+			// TODO: Implement this method
+			
+			super.onLayout(changed, left, top, right, bottom);
+		int newwidth = right-left;
+		int newheight = bottom-top;
+			synchronized (paintsync) {
+				displayWidth = newwidth;
+				displayHeight = newheight;
+				updateSize(true);
+			}
+			postEvent(paintEvent);
+		}
+/*
+		@Override
 		public void surfaceChanged(SurfaceHolder holder, int format, int newwidth, int newheight) {
 			synchronized (paintsync) {
 				displayWidth = newwidth;
@@ -253,14 +275,53 @@ public abstract class Canvas extends Displayable {
 				postEvent(CanvasEvent.getInstance(Canvas.this, CanvasEvent.HIDE_NOTIFY));
 			}
 		}
+		*/
+		
+		
+		
+		@Override
+		protected void onDraw(android.graphics.Canvas canvas)
+		{
+			// TODO: Implement this method
+			super.onDraw(canvas);
+			
+
+			graphics.setCanvas(canvas);
+			if (graphics.hasCanvas()) {
+				graphics.clear(backgroundColor);
+				graphics.drawImage(offscreen, onX, onY, onWidth, onHeight, filter, 255);
+				if (overlay != null) {
+					overlay.paint(graphics);
+				}
+			}
+
+
+		}
+		
 	}
 
 	private class PaintEvent extends Event implements EventFilter {
 		public void process() {
 			synchronized (paintsync) {
-				if (holder == null || !holder.getSurface().isValid()) {
+				
+				if (holder == null ) {
 					return;
 				}
+				graphics.setCanvas(offscreen.getCanvas());
+				if (clearBuffer) {
+					graphics.setColor(0);
+					graphics.setClip(0, 0, width, height);
+					graphics.fillRect(0, 0, width, height);
+				}
+				try {
+					paint(graphics);
+				} catch (Throwable t) {
+					t.printStackTrace();
+					graphics.resetTranslation();
+					graphics.resetClip();
+				}
+				holder.postInvalidate();
+				/*
 				graphics.setCanvas(offscreen.getCanvas());
 				if (clearBuffer) {
 					graphics.setColor(0);
@@ -283,6 +344,7 @@ public abstract class Canvas extends Displayable {
 					}
 					holder.unlockCanvasAndPost(graphics.getCanvas());
 				}
+				*/
 			}
 		}
 
@@ -314,12 +376,12 @@ public abstract class Canvas extends Displayable {
 		}
 	}
 
-	private final Object paintsync = new Object();
+	public static final Object paintsync = new Object();
 
 	private PaintEvent paintEvent = new PaintEvent();
 
 	private InnerView view;
-	private SurfaceHolder holder;
+	private View holder;
 	private Graphics graphics = new Graphics();
 
 	protected int width, height;
@@ -522,7 +584,7 @@ public abstract class Canvas extends Displayable {
 	public View getDisplayableView() {
 		if (view == null) {
 			view = new InnerView(getParentActivity());
-			holder = view.getHolder();
+			//holder = view.getHolder();
 		}
 		return view;
 	}

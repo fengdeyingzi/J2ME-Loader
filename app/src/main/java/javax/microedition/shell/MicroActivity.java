@@ -55,6 +55,7 @@ import javax.microedition.util.ContextHolder;
 import ua.naiksoftware.j2meloader.R;
 import ua.naiksoftware.util.FileUtils;
 import ua.naiksoftware.util.Log;
+import javax.microedition.lcdui.event.CanvasEvent;
 
 public class MicroActivity extends AppCompatActivity {
 	public Displayable current;
@@ -77,10 +78,22 @@ public class MicroActivity extends AppCompatActivity {
 		initEmulator();
 		loadMIDlet();
 	}
-
+//XL 获取Canvas
+	private Canvas getCanvas()
+	{
+		if(current!=null && current instanceof Canvas)
+		{
+			return (Canvas)current;
+		}
+		return null;
+	}
+	
 	@Override
 	public void onResume() {
 		super.onResume();
+		synchronized (Canvas. paintsync) {
+			current.  postEvent(CanvasEvent.getInstance(getCanvas(), CanvasEvent.SHOW_NOTIFY));
+		}
 		visible = true;
 		if (loaded) {
 			if (started) {
@@ -94,6 +107,9 @@ public class MicroActivity extends AppCompatActivity {
 	@Override
 	public void onPause() {
 		super.onPause();
+		synchronized (Canvas. paintsync) {
+			current.  postEvent(CanvasEvent.getInstance(getCanvas(), CanvasEvent.HIDE_NOTIFY));
+		}
 		visible = false;
 	}
 
